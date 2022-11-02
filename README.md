@@ -29,5 +29,6 @@
 - Зарегистрировался в Vagrant Cloud.
 - Загрузил образ командой:
 
-```vagrant cloud publish --release nik-ilya/centos-7.7-kernel-60 1.0 virtualbox centos-7.7.1908-kernel-60-x86_64-Minimal.box
+```bash
+vagrant cloud publish --release nik-ilya/centos-7.7-kernel-60 1.0 virtualbox centos-7.7.1908-kernel-60-x86_64-Minimal.box
 ```
