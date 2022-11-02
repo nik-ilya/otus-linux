@@ -32,3 +32,5 @@
 ```bash
 vagrant cloud publish --release nik-ilya/centos-7.7-kernel-60 1.0 virtualbox centos-7.7.1908-kernel-60-x86_64-Minimal.box
 ```
+ - Ссылка на образ: https://app.vagrantup.com/nik-ilya/boxes/centos-7.7-kernel-60
+ 
