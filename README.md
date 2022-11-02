@@ -1,8 +1,19 @@
-# Инструкции
+# Урок 01. "С чего начинается Linux"
 
-* [Как начать Git](git_quick_start.md)
-* [Как начать Vagrant](vagrant_quick_start.md)
+# Домашнее задание
 
-## otus-linux
+# Цель домашнего задания
+Научиться обновлять ядро в ОС Linux. Получение навыков работы с Vagrant, Packer и публикацией готовых образов в Vagrant Cloud. 
 
-Используйте этот [Vagrantfile](Vagrantfile) - для тестового стенда.
+# Результаты:
+
+ 1) Обновить ядро ОС из репозитория ELRepo
+
+
+
+
+ 2) Создать Vagrant box c помощью Packer
+
+
+
+ 4) Загрузить Vagrant box в Vagrant Cloud
