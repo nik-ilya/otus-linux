@@ -19,9 +19,9 @@ sde      8:64   0  100M  0 disk
 2. Создаю raid 6 из 4 дисков
 
 ```bash
-mdadm --zero-superblock --force /dev/sd{b,c,d,e}
+[root@otuslinux ~]# mdadm --zero-superblock --force /dev/sd{b,c,d,e}
 
-mdadm --create --verbose /dev/md0 -l 6 -n 4 /dev/sd{b,c,d,e}
+[root@otuslinux ~]# mdadm --create --verbose /dev/md0 -l 6 -n 4 /dev/sd{b,c,d,e}
 
 [root@otuslinux ~]# mdadm -D /dev/md0
 /dev/md0:
@@ -109,6 +109,7 @@ md0 : active raid6 sde[3](F) sdb[0] sdd[2] sdc[1]
 ```bash
 [root@otuslinux ~]# mdadm /dev/md0 --remove /dev/sde
 mdadm: hot removed /dev/sde from /dev/md0
+
 [root@otuslinux ~]# cat /proc/mdstat
 Personalities : [raid6] [raid5] [raid4]
 md0 : active raid6 sdb[0] sdd[2] sdc[1]
@@ -120,6 +121,7 @@ md0 : active raid6 sdb[0] sdd[2] sdc[1]
 ```bash
 [root@otuslinux ~]# mdadm /dev/md0 --add /dev/sde
 mdadm: added /dev/sde
+
 [root@otuslinux ~]# cat /proc/mdstat
 Personalities : [raid6] [raid5] [raid4]
 md0 : active raid6 sde[4] sdb[0] sdd[2] sdc[1]
@@ -160,7 +162,7 @@ Consistency Policy : resync
        4       8       64        3      active sync   /dev/sde
 ```
 
-6. Удаляю RAID
+6. Удаляю RAID6.
 
 ```bash
 [root@otuslinux ~]# mdadm -S /dev/md0
@@ -181,12 +183,12 @@ Personalities : [raid6] [raid5] [raid4]
 unused devices: <none>
 ```
 
-7. Т.к. оказалось что в задании надо собрать любой RAID кроме 6, то создам RAID10
+7. Т.к. оказалось что в задании надо собрать любой RAID кроме 6, то создам RAID10.
 
 ```bash
- mdadm --zero-superblock --force /dev/sd{b,c,d,e}
+ [root@otuslinux ~]# mdadm --zero-superblock --force /dev/sd{b,c,d,e}
  
- mdadm --create --verbose /dev/md/raid10 -l 10 -n 4 /dev/sd{b,c,d,e}
+ [root@otuslinux ~]# mdadm --create --verbose /dev/md/raid10 -l 10 -n 4 /dev/sd{b,c,d,e}
  
  [root@otuslinux ~]# cat /proc/mdstat
 Personalities : [raid10]
@@ -286,7 +288,7 @@ Consistency Policy : resync
        3       8       64        3      active sync set-B   /dev/sde
 ```
 
-9. Сделаем файл mdadm.conf
+9. Делаю файл mdadm.conf
 
 ```bash
 [root@otuslinux ~]# cd /etc
@@ -314,7 +316,7 @@ sde       8:64   0  100M  0 disk
 └─md127   9:127  0  196M  0 raid10
 ```
 
-10. Создаем раздел GPT на RAID и 5 партиций.
+10. Создаю раздел GPT на RAID и 5 партиций.
 
 ```bash
 [root@otuslinux ~]# parted -s /dev/md/raid10 mklabel gpt
@@ -360,20 +362,19 @@ sde           8:64   0  100M  0 disk
 ```
 
 
-11. Создаем на партициях файловую систему
+11. Создаю на партициях файловую систему
 
 ```bash
-for i in $(seq 1 5); do sudo mkfs.ext4 /dev/md127p$i; done
+[root@otuslinux ~]# for i in $(seq 1 5); do sudo mkfs.ext4 /dev/md127p$i; done
 ```
 
-12. Монтируем по каталогам.
+12. Монтирую по каталогам.
 
 ```bash
 [root@otuslinux ~]# mkdir -p /raid/part{1,2,3,4,5}
-[root@otuslinux ~]#
-[root@otuslinux ~]#
+
 [root@otuslinux ~]# for i in $(seq 1 5); do mount /dev/md127p$i /raid/part$i; done
-[root@otuslinux ~]#
+
 [root@otuslinux ~]# df -h
 Filesystem      Size  Used Avail Use% Mounted on
 devtmpfs        489M     0  489M   0% /dev
@@ -388,3 +389,5 @@ tmpfs           100M     0  100M   0% /run/user/1000
 /dev/md127p4     34M  782K   31M   3% /raid/part4
 /dev/md127p5     34M  782K   31M   3% /raid/part5
 ```
+
+13. Готово.
