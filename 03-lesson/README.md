@@ -15,7 +15,7 @@
 
 ### 1. Уменьшить том под / до 8G.
 
-'''bash
+```bash
 [root@lvm ~]# lsblk
 NAME                    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 sda                       8:0    0   40G  0 disk 
@@ -28,7 +28,7 @@ sdb                       8:16   0   10G  0 disk
 sdc                       8:32   0    2G  0 disk 
 sdd                       8:48   0    1G  0 disk 
 sde                       8:64   0    1G  0 disk 
-''''
+```
 
 
 [root@lvm ~]# pvcreate /dev/sdb
