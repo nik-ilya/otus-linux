@@ -182,7 +182,7 @@ done
 > s/.img//g"` --force; done
 ```
 
-## 2. Выделить том под /var (/var - сделать в mirror).
+### 2. Выделить том под /var (/var - сделать в mirror).
 
 Создаем зеркало на новых дисках:
 
@@ -267,4 +267,158 @@ sde                        8:64   0    1G  0 disk
 [root@lvm boot]# echo "`blkid | grep var: | awk '{print $2}'` /var ext4 defaults 0 0" >> /etc/fstab
 ```
 
+### 3. Выделить том под /home.
 
+Делается по такому же принципу что и для /var:
+
+```bash
+[root@lvm ~]# lvcreate -n LogVol_Home -L 2G /dev/VolGroup00
+  Logical volume "LogVol_Home" created.
+  
+[root@lvm ~]# mkfs.xfs /dev/VolGroup00/LogVol_Home
+meta-data=/dev/VolGroup00/LogVol_Home isize=512    agcount=4, agsize=131072 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=0, sparse=0
+data     =                       bsize=4096   blocks=524288, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+[root@lvm ~]# mount /dev/VolGroup00/LogVol_Home /mnt/
+
+[root@lvm ~]# df
+Filesystem                         1K-blocks   Used Available Use% Mounted on
+/dev/mapper/VolGroup00-LogVol00      8378368 859600   7518768  11% /
+devtmpfs                              111876      0    111876   0% /dev
+tmpfs                                 120692      0    120692   0% /dev/shm
+tmpfs                                 120692   4512    116180   4% /run
+tmpfs                                 120692      0    120692   0% /sys/fs/cgroup
+/dev/mapper/vg_var-lv_var             943128 217500    660504  25% /var
+/dev/sda2                            1038336  62216    976120   6% /boot
+/dev/mapper/VolGroup00-LogVol_Home   2086912  32944   2053968   2% /mnt
+
+[root@lvm ~]# cp -aR /home/* /mnt/
+
+[root@lvm ~]# rm -rf /home/*
+
+[root@lvm ~]# umount /mnt
+
+[root@lvm ~]# mount /dev/VolGroup00/LogVol_Home /home/
+
+[root@lvm ~]# df
+Filesystem                         1K-blocks   Used Available Use% Mounted on
+/dev/mapper/VolGroup00-LogVol00      8378368 859540   7518828  11% /
+devtmpfs                              111876      0    111876   0% /dev
+tmpfs                                 120692      0    120692   0% /dev/shm
+tmpfs                                 120692   4512    116180   4% /run
+tmpfs                                 120692      0    120692   0% /sys/fs/cgroup
+/dev/mapper/vg_var-lv_var             943128 217500    660504  25% /var
+/dev/sda2                            1038336  62216    976120   6% /boot
+/dev/mapper/VolGroup00-LogVol_Home   2086912  32996   2053916   2% /home
+
+[root@lvm ~]# echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab
+```
+
+### 4.  Для /home - сделать том для снэпшотов.
+
+Сгенерировал файлы в /home:
+
+```bash
+[root@lvm ~]# touch /home/file{1..20}
+
+[root@lvm ~]# ll /home
+total 0
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file1
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file10
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file11
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file12
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file13
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file14
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file15
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file16
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file17
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file18
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file19
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file2
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file20
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file3
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file4
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file5
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file6
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file7
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file8
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file9
+drwx------. 3 vagrant vagrant 95 Dec  3 19:09 vagrant
+```
+
+Сделал снапшот:
+```bash
+[root@lvm ~]# lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
+  Rounding up size to full physical extent 128.00 MiB
+  Logical volume "home_snap" created.
+
+[root@lvm ~]# lvs
+  LV          VG         Attr       LSize   Pool Origin      Data%  Meta%  Move Log Cpy%Sync Convert
+  LogVol00    VolGroup00 -wi-ao----   8.00g                                                         
+  LogVol01    VolGroup00 -wi-ao----   1.50g                                                         
+  LogVol_Home VolGroup00 owi-aos---   2.00g                                                         
+  home_snap   VolGroup00 swi-a-s--- 128.00m      LogVol_Home 0.00                                   
+  lv_var      vg_var     rwi-aor--- 952.00m                                         100.00          
+```
+
+Удалил часть файлов:
+
+```bash
+[root@lvm ~]# rm -f /home/file{11..20}
+
+[root@lvm ~]# ll /home
+total 0
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file1
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file10
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file2
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file3
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file4
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file5
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file6
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file7
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file8
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file9
+drwx------. 3 vagrant vagrant 95 Dec  3 19:09 vagrant
+```
+
+Восстановил файлы из снапшота:
+```bash
+[root@lvm ~]# umount /home
+
+[root@lvm ~]# lvconvert --merge /dev/VolGroup00/home_snap
+  Merging of volume VolGroup00/home_snap started.
+  VolGroup00/LogVol_Home: Merged: 100.00%
+  
+[root@lvm ~]# mount /home
+
+[root@lvm ~]# ll /home
+total 0
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file1
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file10
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file11
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file12
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file13
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file14
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file15
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file16
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file17
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file18
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file19
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file2
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file20
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file3
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file4
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file5
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file6
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file7
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file8
+-rw-r--r--. 1 root    root     0 Dec  4 12:42 file9
+drwx------. 3 vagrant vagrant 95 Dec  3 19:09 vagrant
+```
