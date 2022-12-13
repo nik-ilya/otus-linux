@@ -26,6 +26,8 @@ zfs-2.0.7-1
 zfs-kmod-2.0.7-1
 ````
 
+Создал 4 пула.
+````bash
 [root@server ~]# zpool create otus1 mirror /dev/sdb /dev/sdc
 [root@server ~]# zpool create otus2 mirror /dev/sdd /dev/sde
 [root@server ~]# zpool create otus3 mirror /dev/sdf /dev/sdg
@@ -37,8 +39,11 @@ otus1   960M   105K   960M        -         -     0%     0%  1.00x    ONLINE  -
 otus2   960M   105K   960M        -         -     0%     0%  1.00x    ONLINE  -
 otus3   960M    99K   960M        -         -     0%     0%  1.00x    ONLINE  -
 otus4   960M   105K   960M        -         -     0%     0%  1.00x    ONLINE  -
+````
 
+Включил разные алгоритмы сжатия на каждый пул.
 
+````bash
 [root@server ~]# zfs set compression=lzjb otus1
 [root@server ~]# zfs set compression=lz4 otus2
 [root@server ~]# zfs set compression=gzip-9 otus3
@@ -49,7 +54,22 @@ otus1  compression           lzjb                   local
 otus2  compression           lz4                    local
 otus3  compression           gzip-9                 local
 otus4  compression           zle                    local
+````
 
+Скачал файл http://www.gutenberg.org/ebooks/2600.txt.utf-8 в каждый пул.
+````bash
+[root@server ~]# ll /otus1
+total 2443
+-rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+[root@server ~]# ll /otus2
+total 2041
+-rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+[root@server ~]# ll /otus3
+total 1239
+-rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+[root@server ~]# ll /otus4
+total 3287
+-rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
 
 [root@server ~]# ls -l /otus*
 /otus1:
@@ -74,15 +94,15 @@ otus1  2.53M   829M     2.41M  /otus1
 otus2  2.13M   830M     2.02M  /otus2
 otus3  1.34M   831M     1.23M  /otus3
 otus4  3.35M   829M     3.23M  /otus4
-[root@server ~]# 
+
 [root@server ~]# zfs get all | grep compressratio | grep -v ref
 otus1  compressratio         1.35x                  -
 otus2  compressratio         1.61x                  -
 otus3  compressratio         2.63x                  -
 otus4  compressratio         1.01x                  -
+````
 
-
-Вывод: алгоритм gzip-9 самый эффективный по сжатию. 
+**Вывод:** алгоритм gzip-9 самый эффективный по сжатию. 
 
 2. Определение настроек пула
 
