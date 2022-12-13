@@ -102,19 +102,22 @@ otus3  compressratio         2.63x                  -
 otus4  compressratio         1.01x                  -
 ````
 
-**Вывод:** алгоритм gzip-9 самый эффективный по сжатию. 
+**Вывод:** лучшее сжатие в otus3, алгоритм gzip-9 самый эффективный по сжатию. 
 
-2. Определение настроек пула
+
+### 2. Определение настроек пула
 
 Скачал архив https://drive.google.com/u/0/uc?id=1KRBNW33QWqbvbVHa3hLJivOAt60yukkg и распаковал его.
 
-
+````bash
 [root@server ~]# ll zpoolexport/
 total 1024000
 -rw-r--r--. 1 root root 524288000 May 15  2020 filea
 -rw-r--r--. 1 root root 524288000 May 15  2020 fileb
+````
+Проверка:
 
-
+````bash
 [root@server ~]# zpool import -d zpoolexport/
    pool: otus
      id: 6554193320433390805
@@ -128,8 +131,11 @@ status: Some supported features are not enabled on the pool.
 	  mirror-0                   ONLINE
 	    /root/zpoolexport/filea  ONLINE
 	    /root/zpoolexport/fileb  ONLINE
+````
 
+Импортирую и вижу новый пул otus:
 
+````bash
 [root@server ~]# zpool import -d zpoolexport/ otus
 
 [root@server ~]# zpool list
@@ -139,8 +145,11 @@ otus1   960M  2.53M   957M        -         -     0%     0%  1.00x    ONLINE  -
 otus2   960M  2.13M   958M        -         -     0%     0%  1.00x    ONLINE  -
 otus3   960M  1.34M   959M        -         -     0%     0%  1.00x    ONLINE  -
 otus4   960M  3.35M   957M        -         -     0%     0%  1.00x    ONLINE  -
+````
 
+Просмотр всевожможных настроек нового файловой системы:
 
+````bash
 [root@server ~]# zfs get all otus
 NAME  PROPERTY              VALUE                  SOURCE
 otus  type                  filesystem             -
@@ -215,10 +224,7 @@ otus  keylocation           none                   default
 otus  keyformat             none                   default
 otus  pbkdf2iters           0                      default
 otus  special_small_blocks  0                      default
-[root@server ~]# 
-[root@server ~]# 
-[root@server ~]# 
-[root@server ~]# 
+
 [root@server ~]# zpool get all otus
 NAME  PROPERTY                       VALUE                          SOURCE
 otus  size                           480M                           -
@@ -302,18 +308,20 @@ otus  compression  zle             local
 [root@server ~]# zfs get checksum otus
 NAME  PROPERTY  VALUE      SOURCE
 otus  checksum  sha256     local
+````
 
 
-3. Работа со снапшотом, поиск сообщения от преподавателя
+### 3. Работа со снапшотом, поиск сообщения от преподавателя
 
-Скачал файл
-
+Скачал файл:
+````bash
 [root@server ~]# wget -O otus_task2.file --no-check-certificate https://drive.google.com/u/0/uc?id=1gH8gCL9y7Nd5Ti3IRmplZPF1XjzxeRAG
+````
 
-Восстановим файловую систему из снапшота
+Восстановил файловую систему из снапшота
 
-
-zfs receive otus/test@today < otus_task2.file
+````bash
+[root@server ~]# zfs receive otus/test@today < otus_task2.file
 
 [root@server ~]# zfs list
 NAME             USED  AVAIL     REFER  MOUNTPOINT
@@ -324,12 +332,14 @@ otus1           2.53M   829M     2.41M  /otus1
 otus2           2.13M   830M     2.02M  /otus2
 otus3           1.34M   831M     1.23M  /otus3
 otus4           3.35M   829M     3.23M  /otus4
+````
 
-
+Нашел секретное сообщение с ссылкой на github.com:
+````bash
 [root@server ~]# find /otus/test -name "secret_message"
 /otus/test/task1/file_mess/secret_message
 
-
 [root@server ~]# cat /otus/test/task1/file_mess/secret_message
 https://github.com/sindresorhus/awesome
+````
 
