@@ -1,345 +1,202 @@
-# Урок 04. "ZFS"
+# Домашнее задание 05. "NFS"
 
 ## Домашнее задание.
 
-Запустил ВМ используя vagrantfile https://github.com/nixuser/zfs, только добавил создание 8 дисков вместо 6.
+### 1. Создал файл Vangrantfile с созданием двух серверов nfsserver и nfsclient.
 
-### 1. Определение алгоритма с наилучшим сжатием.
+### 2. Настройка сервера NFS.
 
-````bash
-[vagrant@server ~]$ lsblk
-NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda      8:0    0   64G  0 disk 
-├─sda1   8:1    0  2.1G  0 part [SWAP]
-└─sda2   8:2    0 61.9G  0 part /
-sdb      8:16   0    1G  0 disk 
-sdc      8:32   0    1G  0 disk 
-sdd      8:48   0    1G  0 disk 
-sde      8:64   0    1G  0 disk 
-sdf      8:80   0    1G  0 disk 
-sdg      8:96   0    1G  0 disk 
-sdh      8:112  0    1G  0 disk 
-sdi      8:128  0    1G  0 disk 
+- Установил утилиту nfs-utils:
 
-[vagrant@server ~]$ zfs version
-zfs-2.0.7-1
-zfs-kmod-2.0.7-1
-````
+```bash
+yum install nfs-utils
+```
 
-Создал 4 пула.
-````bash
-[root@server ~]# zpool create otus1 mirror /dev/sdb /dev/sdc
-[root@server ~]# zpool create otus2 mirror /dev/sdd /dev/sde
-[root@server ~]# zpool create otus3 mirror /dev/sdf /dev/sdg
-[root@server ~]# zpool create otus4 mirror /dev/sdh /dev/sdi
+- включил firewall:
+```bash
+[root@nfsserver ~]# systemctl enable firewalld --now
+Created symlink from /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service to /usr/lib/systemd/system/firewalld.service.
+Created symlink from /etc/systemd/system/multi-user.target.wants/firewalld.service to /usr/lib/systemd/system/firewalld.service.
 
-[root@server ~]# zpool list
-NAME    SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
-otus1   960M   105K   960M        -         -     0%     0%  1.00x    ONLINE  -
-otus2   960M   105K   960M        -         -     0%     0%  1.00x    ONLINE  -
-otus3   960M    99K   960M        -         -     0%     0%  1.00x    ONLINE  -
-otus4   960M   105K   960M        -         -     0%     0%  1.00x    ONLINE  -
-````
+[root@nfsserver ~]# systemctl status firewalld
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2022-12-18 15:01:30 UTC; 10s ago
+     Docs: man:firewalld(1)
+ Main PID: 3555 (firewalld)
+   CGroup: /system.slice/firewalld.service
+           └─3555 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
 
-Включил разные алгоритмы сжатия на каждый пул.
+Dec 18 15:01:30 nfsserver systemd[1]: Starting firewalld - dynamic firewall daemon...
+Dec 18 15:01:30 nfsserver systemd[1]: Started firewalld - dynamic firewall daemon.
+Dec 18 15:01:31 nfsserver firewalld[3555]: WARNING: AllowZoneDrifting is enabled. This is considered an insecure configuration option. It will be removed in a ...ng it now.
+Hint: Some lines were ellipsized, use -l to show in full.
+```
 
-````bash
-[root@server ~]# zfs set compression=lzjb otus1
-[root@server ~]# zfs set compression=lz4 otus2
-[root@server ~]# zfs set compression=gzip-9 otus3
-[root@server ~]# zfs set compression=zle otus4
+- настраиваю firewall:
+ 
+```bash
+[root@nfsserver ~]# firewall-cmd --add-service="nfs3" \
+>             --add-service="rpc-bind" \
+>              --add-service="mountd" \
+>              --permanent
+success
+[root@nfsserver ~]# firewall-cmd --reload
+success
+[root@nfsserver ~]# 
+```
 
-[root@server ~]# zfs get all | grep compression
-otus1  compression           lzjb                   local
-otus2  compression           lz4                    local
-otus3  compression           gzip-9                 local
-otus4  compression           zle                    local
-````
+- включаю NFS:
 
-Скачал файл http://www.gutenberg.org/ebooks/2600.txt.utf-8 в каждый пул.
-````bash
-[root@server ~]# ll /otus1
-total 2443
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
-[root@server ~]# ll /otus2
-total 2041
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
-[root@server ~]# ll /otus3
-total 1239
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
-[root@server ~]# ll /otus4
-total 3287
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+```bash
+[root@nfsserver ~]# systemctl enable nfs --now
+Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.service to /usr/lib/systemd/system/nfs-server.service.
+```
 
-[root@server ~]# ls -l /otus*
-/otus1:
-total 2443
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+- создал папку и задал на нее права:
+```bash
+[root@nfsserver ~]# mkdir -p /srv/share/upload
+[root@nfsserver ~]# chown -R nfsnobody:nfsnobody /srv/share
+[root@nfsserver ~]# chmod 0777 /srv/share/upload
+```
+- создал файл exports:
+```bash
+[root@nfsserver ~]# echo '/srv/share 192.168.50.11/32(rw,sync,root_squash)' > /etc/exports
+[root@nfsserver ~]# cat /etc/exports
+/srv/share 192.168.50.11/32(rw,sync,root_squash)
+```
+- все настроено:
+```bash
+[root@nfsserver ~]# exportfs -r
 
-/otus2:
-total 2041
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+[root@nfsserver ~]# exportfs -s
+/srv/share  192.168.50.11/32(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,root_squash,no_all_squash)
+```
+### 3. Настройка клиента NFS.
 
-/otus3:
-total 1239
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+- аналогично с сервером установил nfs-utils, включил firewall.
 
-/otus4:
-total 3287
--rw-r--r--. 1 root root 3359372 Dec 13 14:34 pg2600.txt
+- далее правим fstab для автоматического монтирования папки:
 
-[root@server ~]# zfs list
-NAME    USED  AVAIL     REFER  MOUNTPOINT
-otus1  2.53M   829M     2.41M  /otus1
-otus2  2.13M   830M     2.02M  /otus2
-otus3  1.34M   831M     1.23M  /otus3
-otus4  3.35M   829M     3.23M  /otus4
+```bash
+[root@nfsclient ~]# echo "192.168.50.10:/srv/share/ /mnt nfs vers=3,proto=udp,noauto,x-systemd.automount 0 0" >> /etc/fstab
 
-[root@server ~]# zfs get all | grep compressratio | grep -v ref
-otus1  compressratio         1.35x                  -
-otus2  compressratio         1.61x                  -
-otus3  compressratio         2.63x                  -
-otus4  compressratio         1.01x                  -
-````
+[root@nfsclient ~]# systemctl daemon-reload
 
-**Вывод:** лучшее сжатие в otus3, алгоритм gzip-9 самый эффективный по сжатию. 
+[root@nfsclient ~]# systemctl restart remote-fs.target
+```
 
+- проверяю монтирование папки:
 
-### 2. Определение настроек пула
+```bash
+[root@nfsclient mnt]# cd /mnt/
+[root@nfsclient mnt]# mount | grep mnt
+systemd-1 on /mnt type autofs (rw,relatime,fd=46,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=46761)
+192.168.50.10:/srv/share/ on /mnt type nfs (rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,hard,proto=udp,timeo=11,retrans=3,sec=sys,mountaddr=192.168.50.10,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=192.168.50.10)
+```
+### 4. Проверка работоспособности NFS.
 
-Скачал архив https://drive.google.com/u/0/uc?id=1KRBNW33QWqbvbVHa3hLJivOAt60yukkg и распаковал его.
+- проверяю права на создание файлов:
 
-````bash
-[root@server ~]# ll zpoolexport/
-total 1024000
--rw-r--r--. 1 root root 524288000 May 15  2020 filea
--rw-r--r--. 1 root root 524288000 May 15  2020 fileb
-````
-Проверка:
+```bash
+[root@nfsserver ~]# cd /srv/share/upload
 
-````bash
-[root@server ~]# zpool import -d zpoolexport/
-   pool: otus
-     id: 6554193320433390805
-  state: ONLINE
-status: Some supported features are not enabled on the pool.
- action: The pool can be imported using its name or numeric identifier, though
-	some features will not be available without an explicit 'zpool upgrade'.
- config:
+[root@nfsserver upload]# ls
 
-	otus                         ONLINE
-	  mirror-0                   ONLINE
-	    /root/zpoolexport/filea  ONLINE
-	    /root/zpoolexport/fileb  ONLINE
-````
+[root@nfsserver upload]# touch check_file
 
-Импортирую и вижу новый пул otus:
+[root@nfsclient upload]# touch client_file
 
-````bash
-[root@server ~]# zpool import -d zpoolexport/ otus
+[root@nfsclient upload]# ls
+check_file  client_file
 
-[root@server ~]# zpool list
-NAME    SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
-otus    480M  2.18M   478M        -         -     0%     0%  1.00x    ONLINE  -
-otus1   960M  2.53M   957M        -         -     0%     0%  1.00x    ONLINE  -
-otus2   960M  2.13M   958M        -         -     0%     0%  1.00x    ONLINE  -
-otus3   960M  1.34M   959M        -         -     0%     0%  1.00x    ONLINE  -
-otus4   960M  3.35M   957M        -         -     0%     0%  1.00x    ONLINE  -
-````
+[root@nfsclient upload]# ll
+total 0
+-rw-r--r--. 1 root      root      0 Dec 18 15:29 check_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:43 client_file
 
-Просмотр всевожможных настроек нового файловой системы:
+[root@nfsserver upload]# ll
+total 0
+-rw-r--r--. 1 root      root      0 Dec 18 15:29 check_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:43 client_file
+```
 
-````bash
-[root@server ~]# zfs get all otus
-NAME  PROPERTY              VALUE                  SOURCE
-otus  type                  filesystem             -
-otus  creation              Fri May 15  4:00 2020  -
-otus  used                  2.04M                  -
-otus  available             350M                   -
-otus  referenced            24K                    -
-otus  compressratio         1.00x                  -
-otus  mounted               yes                    -
-otus  quota                 none                   default
-otus  reservation           none                   default
-otus  recordsize            128K                   local
-otus  mountpoint            /otus                  default
-otus  sharenfs              off                    default
-otus  checksum              sha256                 local
-otus  compression           zle                    local
-otus  atime                 on                     default
-otus  devices               on                     default
-otus  exec                  on                     default
-otus  setuid                on                     default
-otus  readonly              off                    default
-otus  zoned                 off                    default
-otus  snapdir               hidden                 default
-otus  aclmode               discard                default
-otus  aclinherit            restricted             default
-otus  createtxg             1                      -
-otus  canmount              on                     default
-otus  xattr                 on                     default
-otus  copies                1                      default
-otus  version               5                      -
-otus  utf8only              off                    -
-otus  normalization         none                   -
-otus  casesensitivity       sensitive              -
-otus  vscan                 off                    default
-otus  nbmand                off                    default
-otus  sharesmb              off                    default
-otus  refquota              none                   default
-otus  refreservation        none                   default
-otus  guid                  14592242904030363272   -
-otus  primarycache          all                    default
-otus  secondarycache        all                    default
-otus  usedbysnapshots       0B                     -
-otus  usedbydataset         24K                    -
-otus  usedbychildren        2.01M                  -
-otus  usedbyrefreservation  0B                     -
-otus  logbias               latency                default
-otus  objsetid              54                     -
-otus  dedup                 off                    default
-otus  mlslabel              none                   default
-otus  sync                  standard               default
-otus  dnodesize             legacy                 default
-otus  refcompressratio      1.00x                  -
-otus  written               24K                    -
-otus  logicalused           1020K                  -
-otus  logicalreferenced     12K                    -
-otus  volmode               default                default
-otus  filesystem_limit      none                   default
-otus  snapshot_limit        none                   default
-otus  filesystem_count      none                   default
-otus  snapshot_count        none                   default
-otus  snapdev               hidden                 default
-otus  acltype               off                    default
-otus  context               none                   default
-otus  fscontext             none                   default
-otus  defcontext            none                   default
-otus  rootcontext           none                   default
-otus  relatime              off                    default
-otus  redundant_metadata    all                    default
-otus  overlay               on                     default
-otus  encryption            off                    default
-otus  keylocation           none                   default
-otus  keyformat             none                   default
-otus  pbkdf2iters           0                      default
-otus  special_small_blocks  0                      default
+- перезагрузил сервер клиента - папка примонтировалась, выполняю проверки:
 
-[root@server ~]# zpool get all otus
-NAME  PROPERTY                       VALUE                          SOURCE
-otus  size                           480M                           -
-otus  capacity                       0%                             -
-otus  altroot                        -                              default
-otus  health                         ONLINE                         -
-otus  guid                           6554193320433390805            -
-otus  version                        -                              default
-otus  bootfs                         -                              default
-otus  delegation                     on                             default
-otus  autoreplace                    off                            default
-otus  cachefile                      -                              default
-otus  failmode                       wait                           default
-otus  listsnapshots                  off                            default
-otus  autoexpand                     off                            default
-otus  dedupratio                     1.00x                          -
-otus  free                           478M                           -
-otus  allocated                      2.09M                          -
-otus  readonly                       off                            -
-otus  ashift                         0                              default
-otus  comment                        -                              default
-otus  expandsize                     -                              -
-otus  freeing                        0                              -
-otus  fragmentation                  0%                             -
-otus  leaked                         0                              -
-otus  multihost                      off                            default
-otus  checkpoint                     -                              -
-otus  load_guid                      8466488305464193471            -
-otus  autotrim                       off                            default
-otus  feature@async_destroy          enabled                        local
-otus  feature@empty_bpobj            active                         local
-otus  feature@lz4_compress           active                         local
-otus  feature@multi_vdev_crash_dump  enabled                        local
-otus  feature@spacemap_histogram     active                         local
-otus  feature@enabled_txg            active                         local
-otus  feature@hole_birth             active                         local
-otus  feature@extensible_dataset     active                         local
-otus  feature@embedded_data          active                         local
-otus  feature@bookmarks              enabled                        local
-otus  feature@filesystem_limits      enabled                        local
-otus  feature@large_blocks           enabled                        local
-otus  feature@large_dnode            enabled                        local
-otus  feature@sha512                 enabled                        local
-otus  feature@skein                  enabled                        local
-otus  feature@edonr                  enabled                        local
-otus  feature@userobj_accounting     active                         local
-otus  feature@encryption             enabled                        local
-otus  feature@project_quota          active                         local
-otus  feature@device_removal         enabled                        local
-otus  feature@obsolete_counts        enabled                        local
-otus  feature@zpool_checkpoint       enabled                        local
-otus  feature@spacemap_v2            active                         local
-otus  feature@allocation_classes     enabled                        local
-otus  feature@resilver_defer         enabled                        local
-otus  feature@bookmark_v2            enabled                        local
-otus  feature@redaction_bookmarks    disabled                       local
-otus  feature@redacted_datasets      disabled                       local
-otus  feature@bookmark_written       disabled                       local
-otus  feature@log_spacemap           disabled                       local
-otus  feature@livelist               disabled                       local
-otus  feature@device_rebuild         disabled                       local
-otus  feature@zstd_compress          disabled                       local
+```bash
+[vagrant@nfsclient ~]$ w
+ 15:47:28 up 0 min,  1 user,  load average: 1.04, 0.39, 0.14
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+vagrant  pts/0    10.0.2.2         15:47    0.00s  0.06s  0.02s w
+[vagrant@nfsclient ~]$ sudo -i
+[root@nfsclient ~]# cd /mnt
+[root@nfsclient mnt]# ll
+total 0
+drwxrwxrwx. 2 nfsnobody nfsnobody 43 Dec 18 15:43 upload
 
+[root@nfsclient mnt]# cd /mnt/upload/
+[root@nfsclient upload]# ll
+total 0
+-rw-r--r--. 1 root      root      0 Dec 18 15:29 check_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:43 client_file
 
-[root@server ~]# zfs get available otus
-NAME  PROPERTY   VALUE  SOURCE
-otus  available  350M   -
+[root@nfsclient upload]# showmount -a 192.168.50.10
+All mount points on 192.168.50.10:
+192.168.50.11:/srv/share
 
-[root@server ~]# zfs get readonly otus
-NAME  PROPERTY  VALUE   SOURCE
-otus  readonly  off     default
+[root@nfsclient upload]# touch final_check
 
-[root@server ~]# zfs get recordsize otus
-NAME  PROPERTY    VALUE    SOURCE
-otus  recordsize  128K     local
+[root@nfsclient upload]# ll
+total 0
+-rw-r--r--. 1 root      root      0 Dec 18 15:29 check_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:43 client_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:54 final_check
+```
 
-[root@server ~]# zfs get compression otus
-NAME  PROPERTY     VALUE           SOURCE
-otus  compression  zle             local
+- перезагрузил сервер и произвел проверку:
+```bash
+[vagrant@nfsserver ~]$ w
+ 15:51:46 up 0 min,  1 user,  load average: 1.33, 0.47, 0.16
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+vagrant  pts/0    10.0.2.2         15:51    2.00s  0.06s  0.02s w
 
-[root@server ~]# zfs get checksum otus
-NAME  PROPERTY  VALUE      SOURCE
-otus  checksum  sha256     local
-````
+[vagrant@nfsserver ~]$ ll /srv/share/upload/
+total 0
+-rw-r--r--. 1 root      root      0 Dec 18 15:29 check_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:43 client_file
 
+[vagrant@nfsserver ~]$ systemctl status nfs
+● nfs-server.service - NFS server and services
+   Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; enabled; vendor preset: disabled)
+  Drop-In: /run/systemd/generator/nfs-server.service.d
+           └─order-with-mounts.conf
+   Active: active (exited) since Sun 2022-12-18 15:51:09 UTC; 1min 21s ago
+  Process: 812 ExecStartPost=/bin/sh -c if systemctl -q is-active gssproxy; then systemctl reload gssproxy ; fi (code=exited, status=0/SUCCESS)
+  Process: 783 ExecStart=/usr/sbin/rpc.nfsd $RPCNFSDARGS (code=exited, status=0/SUCCESS)
+  Process: 781 ExecStartPre=/usr/sbin/exportfs -r (code=exited, status=0/SUCCESS)
+ Main PID: 783 (code=exited, status=0/SUCCESS)
+   CGroup: /system.slice/nfs-server.service
+   
+[vagrant@nfsserver ~]$ systemctl status firewalld
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2022-12-18 15:51:03 UTC; 1min 41s ago
+     Docs: man:firewalld(1)
+ Main PID: 404 (firewalld)
+   CGroup: /system.slice/firewalld.service
+           └─404 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
+	   
+[root@nfsserver ~]# exportfs -s
+/srv/share  192.168.50.11/32(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,root_squash,no_all_squash)
 
-### 3. Работа со снапшотом, поиск сообщения от преподавателя
+[root@nfsserver ~]# showmount -a 192.168.50.10
+All mount points on 192.168.50.10:
+192.168.50.11:/srv/share
 
-Скачал файл:
-````bash
-[root@server ~]# wget -O otus_task2.file --no-check-certificate https://drive.google.com/u/0/uc?id=1gH8gCL9y7Nd5Ti3IRmplZPF1XjzxeRAG
-````
-
-Восстановил файловую систему из снапшота
-
-````bash
-[root@server ~]# zfs receive otus/test@today < otus_task2.file
-
-[root@server ~]# zfs list
-NAME             USED  AVAIL     REFER  MOUNTPOINT
-otus            4.97M   347M       25K  /otus
-otus/hometask2  1.88M   347M     1.88M  /otus/hometask2
-otus/test       2.84M   347M     2.83M  /otus/test
-otus1           2.53M   829M     2.41M  /otus1
-otus2           2.13M   830M     2.02M  /otus2
-otus3           1.34M   831M     1.23M  /otus3
-otus4           3.35M   829M     3.23M  /otus4
-````
-
-Нашел секретное сообщение с ссылкой на github.com:
-````bash
-[root@server ~]# find /otus/test -name "secret_message"
-/otus/test/task1/file_mess/secret_message
-
-[root@server ~]# cat /otus/test/task1/file_mess/secret_message
-https://github.com/sindresorhus/awesome
-````
+[root@nfsserver ~]# ll /srv/share/upload/
+total 0
+-rw-r--r--. 1 root      root      0 Dec 18 15:29 check_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:43 client_file
+-rw-r--r--. 1 nfsnobody nfsnobody 0 Dec 18 15:54 final_check
+```
 
