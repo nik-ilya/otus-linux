@@ -11,3 +11,5 @@
 [ДЗ 04. "ZFS"](04-lesson/)
 
 [ДЗ 05. "NFS"](05-lesson/)
+
+[ДЗ 06. "RPM and REPO"](06-lesson/)
