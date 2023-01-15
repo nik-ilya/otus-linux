@@ -56,13 +56,19 @@ touch /.autorelabel
 ![](1-6.JPG)
 
 ### 2. Установить систему с LVM, после чего переименовать VG.
-
+Текущее состояние системы:
 ![](2-1.JPG)
-
+Переименовываем:
 ![](2-2.JPG)
+Также переименовываем в файлах /etc/fstab, /etc/default/grub, /boot/grub2/grub.cfg старое название на новое.
+
+Пересоздаем initrd image, чтобы он знал новое название Volume Group:
+```
+[root@otuslinux ~]# mkinitrd -f -v /boot/initramfs-$(uname -r).img $(uname -r)
+```
 
 ![](2-3.JPG)
-
+Перегружаемся и проверяем:
 ![](2-4.JPG)
 
 ### 3. Добавить модуль в initrd.
