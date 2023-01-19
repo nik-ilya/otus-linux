@@ -46,5 +46,5 @@ Unit=watchlog.service
 WantedBy=multi-user.target
 EOF
 
-systemctl enable --now watchlog.timer
-systemctl start watchlog.service
+systemctl enable watchlog.timer
+
