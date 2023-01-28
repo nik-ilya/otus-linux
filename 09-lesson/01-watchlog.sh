@@ -55,4 +55,4 @@ WantedBy=multi-user.target
 EOF
 
 systemctl enable watchlog.timer
-
+systemctl start watchlog.timer
