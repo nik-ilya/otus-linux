@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo -i
+yum install epel-release -y && yum install spawn-fcgi php php-cli mod_fcgid httpd -y
+
 sed -i 's/#SOCKET/SOCKET/g' /etc/sysconfig/spawn-fcgi
 sed -i 's/#OPTIONS/OPTIONS/g' /etc/sysconfig/spawn-fcgi
 
