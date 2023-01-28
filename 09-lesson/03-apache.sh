@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo -i
+
 cp /usr/lib/systemd/system/httpd.service /etc/systemd/system/httpd@.service
 
 sed -i 's/sysconfig\/httpd/sysconfig\/httpd-\%I/g' /etc/systemd/system/httpd@.service
