@@ -13,6 +13,9 @@ Vagrant.configure(2) do |config|
   config.vm.define "systemd" do |bash|
     bash.vm.network "private_network", ip: "192.168.50.10", virtualbox__intnet: "net1"
     bash.vm.hostname = "bash"
+    bash.vm.provision "shell", inline: <<-SHELL
+               yum update -y && yum install nginx -y
+            SHELL
 #    bash.vm.provision "shell", path: "script.sh"
   end
 end
