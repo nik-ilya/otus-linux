@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
     systemd.vm.hostname = "systemd"
     systemd.vm.provision "shell", path: "01-watchlog.sh"
     systemd.vm.provision "shell", path: "02-spawn-fcgi.sh"
-    systemd.vm.provision "shell", path: "03-httpd.sh"
+    systemd.vm.provision "shell", path: "03-apache.sh"
   end
 
 
