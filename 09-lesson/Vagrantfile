@@ -13,6 +13,9 @@ Vagrant.configure(2) do |config|
   config.vm.define "systemd" do |systemd|
     systemd.vm.network "private_network", ip: "192.168.50.10", virtualbox__intnet: "net1"
     systemd.vm.hostname = "systemd"
+    systemd.vm.provision "shell", inline: <<-SHELL
+               yum install epel-release -y && yum install spawn-fcgi php php-cli mod_fcgid httpd vim wget java-1.8.0-openjdk-devel -y
+            SHELL
     systemd.vm.provision "shell", path: "01-watchlog.sh"
     systemd.vm.provision "shell", path: "02-spawn-fcgi.sh"
     systemd.vm.provision "shell", path: "03-apache.sh"
