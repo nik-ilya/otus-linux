@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo -i
+
 cat > /etc/sysconfig/watchlog <<EOF
 WORD="ALERT"
 LOG=/var/log/watchlog.log
