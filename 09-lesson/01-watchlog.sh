@@ -9,6 +9,11 @@ cat > /var/log/watchlog.log <<EOF
 bla-bla-bla
 ALERT!!!
 bla-bla-bla
+ALERT!!!
+bla-bla-bla
+ALERT!!!
+bla-bla-bla
+ALERT!!!
 EOF
 
 cat > /opt/watchlog.sh <<EOF
