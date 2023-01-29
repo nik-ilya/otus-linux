@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOCK=/var/tmp/lockfile
-LOGFILE=./access.log
+LOGFILE=/tmp/access.log
 RESULTFILE=./result
 
 x=7

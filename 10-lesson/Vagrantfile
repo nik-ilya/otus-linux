@@ -17,8 +17,7 @@ Vagrant.configure(2) do |config|
     bash.vm.provision "file", source: "./script2.sh", destination: "/tmp/script.sh"
     bash.vm.provision "shell", inline: "(echo \"0 * * * * /tmp/script.sh \") >> /var/spool/cron/root"
     bash.vm.provision "shell", inline: <<-SHELL
-               mkdir -p ~root/.ssh; cp ~vagrant/.ssh/auth* ~root/.ssh
-               yum install mailx -y
+               sudo yum install mailx -y
                chmod +x /tmp/script.sh
             SHELL
   end
