@@ -45,7 +45,7 @@ logging() {
 logging $LOGFILE $RESULTFILE
 
 #Sending mail to admin-linux@otus.ru
-cat $RESULTFILE | mail -s "My parser nginx logs" webnikolaenko@yandex.ru
+cat $RESULTFILE | mail -s "My parser nginx logs" [censored]@yandex.ru
 
 #Delete result file logs
 rm -f $RESULTFILE
