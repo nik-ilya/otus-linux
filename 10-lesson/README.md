@@ -19,6 +19,7 @@
 
 Результат выполнения скрипта - получение на почтовый ящик письма следующего содержания:
 
+```
 Received: by localhost.localdomain (Postfix, from userid 0)
 	id 30F4C400A4C3; Sun, 29 Jan 2023 16:15:01 +0000 (UTC)
 Date: Sun, 29 Jan 2023 16:15:01 +0000
@@ -67,3 +68,4 @@ X-Yandex-Forward: 9214544dbc2c8b1a8a258c9091e97f67
      21 166
       2 499
       1 \x22MD5\x22,
+```
