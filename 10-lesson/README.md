@@ -17,3 +17,55 @@
 
 ## Выполнение.
 
+Результат выполнения скрипта - получение на почтовый ящик каждый час письма следующего содержания:
+
+```
+Received: by localhost.localdomain (Postfix, from userid 0)
+	id 30F4C400A4C3; Sun, 29 Jan 2023 16:15:01 +0000 (UTC)
+Date: Sun, 29 Jan 2023 16:15:01 +0000
+To: [censored]@yandex.ru
+Subject: My parser nginx logs
+User-Agent: Heirloom mailx 12.5 7/5/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <20230129161501.30F4C400A4C3@bash.localdomain>
+From: root@bash.localdomain (root)
+Return-Path: root@bash.localdomain
+X-Yandex-Forward: 9214544dbc2c8b1a8a258c9091e97f67
+
+
+Файл начинается с [19/Jan/2023:04:16:38] по [29/Jan/2023:10:11:08]
+
+7 IP адресов (с наибольшим количеством запросов) с указанием кол-ва запросов c момента последнего запуска скрипта:
+      1 107.170.245.18
+      1 107.170.238.11
+      1 107.170.227.27
+      1 107.170.227.13
+      1 107.170.226.24
+      1 104.140.148.78
+      1 103.89.12.145
+
+7 запрашиваемых URL (с наибольшим количеством запросов) с указанием количества запросов c момента последнего запуска скрипта:
+      1 /admin.asp
+      1 /__Additional
+      1 /aab9
+      1 /aaaaaaaaaaaaaaaaaaaaaaaaaqr
+      1 /aaa9
+      1 /99vu
+      1 /99vt
+
+Ошибки веб-сервера/приложения c момента последнего запуска:
+    176 404
+     55 400
+      2 499
+
+Список всех кодов HTTP ответа с указанием их кол-ва с момента последнего запуска скрипта:
+    193 200
+    176 404
+     55 400
+     40 "-"
+     21 166
+      2 499
+      1 \x22MD5\x22,
+```
