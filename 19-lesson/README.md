@@ -53,7 +53,7 @@ type=AVC msg=audit(1676260678.478:864): avc:  denied  { name_bind } for  pid=292
 
 ````
 
-#####1.1 setsebool
+##### 1.1 setsebool
 
 
 
