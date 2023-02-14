@@ -102,7 +102,7 @@ Feb 13 05:21:54 selinux systemd[1]: Started The nginx HTTP and reverse proxy ser
 nis_enabled --> on
 ````
 
-Вернем настройки обратно и проверим что nginx не запускается:
+Вернем настройки обратно и проверим, что nginx не запускается:
 
 ````
 [root@selinux ~]# setsebool -P nis_enabled off
