@@ -259,3 +259,33 @@ Job for nginx.service failed because the control process exited with error code.
 
 
 #### Задание 2.
+
+Поднимаем стенд, клонируя предложенный репозиторий и запускаем две ВМ.
+
+````
+root@otuslinux-ubu:~/otus-linux/19-lesson/task2# vagrant status
+Current machine states:
+
+ns01                      running (virtualbox)
+client                    running (virtualbox)
+
+This environment represents multiple VMs. The VMs are all listed
+above with their current state. For more information about a specific
+VM, run `vagrant status NAME`.
+````
+
+
+Заходим на машину client и пробуем внести изменения в зону:
+````
+[vagrant@client ~]$ nsupdate -k /etc/named.zonetransfer.key
+> 
+> 
+> server 192.168.50.10
+> zone ddns.lab
+> update add www.ddns.lab. 60 A 192.168.50.15
+> send
+update failed: SERVFAIL
+> quit
+````
+
+
