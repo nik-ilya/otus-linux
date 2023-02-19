@@ -20,7 +20,7 @@
 
 #### Задание 1.
 
-Создаем стенд, поднимаем инфраструктуру и Nginx с помощью [Vagrantfile](/task1/Vagrantfile).
+Создаем стенд, поднимаем инфраструктуру и Nginx с помощью [Vagrantfile](task1/Vagrantfile).
 Проверяем статус Nginx.
 ````
 [root@selinux ~]#  systemctl status nginx
