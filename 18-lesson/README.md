@@ -11,14 +11,22 @@
 
 ## Выполнение.
 
-#### Задание 1.
+#### Задание 1. Создание контейнера.
+
+Ссылка на образ в docker hub:https://hub.docker.com/r/webnikolaenko/myweb
+
+Установка:
 
 ````
 docker run -d -p 8088:80 webnikolaenko/myweb:0.2
 ````
 
+Проверка:
 ````
-root@otuslinux-ubu:~/otus-linux/18-lesson# curl localhost:8088
+#curl localhost:8088
 Welcome to nginx for OTUS!
 Copyright (c) Ilya Nikolaenko
 ````
+#### Задание 2. Определите разницу между контейнером и образом.
+
+#### Задание 3. Можно ли в контейнере собрать ядро?
