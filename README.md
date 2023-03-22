@@ -27,3 +27,5 @@
 [ДЗ 12. "Docker"](18-lesson/)
 
 [ДЗ 13. "SELinux"](19-lesson/)
+
+[ДЗ 14. "Prometheus"](23-lesson/)
