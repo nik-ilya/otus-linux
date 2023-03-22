@@ -24,6 +24,6 @@
 
 [ДЗ 11. "Ansible"](15-lesson/)
 
-[ДЗ 12. "_____"](15-lesson/)
+[ДЗ 12. "Docker"](18-lesson/)
 
 [ДЗ 13. "SELinux"](19-lesson/)
