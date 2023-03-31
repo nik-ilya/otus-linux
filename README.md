@@ -29,3 +29,5 @@
 [ДЗ 13. "SELinux"](19-lesson/)
 
 [ДЗ 14. "Prometheus"](23-lesson/)
+
+[ДЗ 15. "PAM"](24-lesson/)
