@@ -46,7 +46,7 @@ Apr 18 05:01:24 web nginx_error: 2023/04/18 05:01:24 [error] 1061#1061: *2 open(
 Apr 18 05:23:34 web nginx_error: 2023/04/18 05:23:34 [error] 1061#1061: *4 open() "/usr/share/nginx/html/lalalala" failed (2: No such file or directory), client: 192.168.10.20, server: _, request: "GET /lalalala HTTP/1.1", host: "192.168.10.10"
 
 
-# Проверяем собираются ли логи аудита для хоста WEB по изменению файла nginx.conf
+# Проверяем собираются ли логи аудита для хоста web по изменению файла nginx.conf
 [root@log ~]# cat /var/log/audit/audit.log | grep nginx
 node=web type=CONFIG_CHANGE msg=audit(1681793738.528:153): auid=4294967295 ses=4294967295 subj=system_u:system_r:unconfined_service_t:s0 op=remove_rule key="nginx_conf" list=4 res=1
 node=web type=CONFIG_CHANGE msg=audit(1681793738.528:154): auid=4294967295 ses=4294967295 subj=system_u:system_r:unconfined_service_t:s0 op=remove_rule key="nginx_conf" list=4 res=1
