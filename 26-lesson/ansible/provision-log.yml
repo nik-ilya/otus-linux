@@ -1,0 +1,71 @@
+---
+  - name: Rsyslog
+    hosts: log
+    become: true
+    tasks:
+      - name: Update Rsyslog
+        yum:
+          name: rsyslog
+          state: latest
+
+
+  - name: Configuration rsyslog server
+    hosts: log
+    become: true
+    tasks:
+      - name: edit /etc/rsyslog.conf add ModLoad imtcp
+        lineinfile: 
+          path: /etc/rsyslog.conf
+          regexp: '^#\$ModLoad imtcp'
+          line: "$ModLoad imtcp"
+          state: present
+
+      - name: edit /etc/rsyslog.conf
+        lineinfile: 
+          path: /etc/rsyslog.conf
+          regexp: '^#\$ModLoad imudp'
+          line: "$ModLoad imudp"
+          state: present
+
+      - name: edit /etc/rsyslog.conf add InputTCPServerRun 514
+        lineinfile: 
+          path: /etc/rsyslog.conf
+          regexp: '^#\$InputTCPServerRun 514'
+          line: "$InputTCPServerRun 514"
+          state: present
+
+      - name: edit /etc/rsyslog.conf add UDPServerRun 514
+        lineinfile: 
+          path: /etc/rsyslog.conf
+          regexp: '^#\$UDPServerRun 514'
+          line: "$UDPServerRun 514"
+          state: present
+        notify: restart rsyslog
+
+      - name: edit /etc/rsyslog.conf
+        lineinfile:
+          dest: /etc/rsyslog.conf
+          line: |
+            #Add remote logs
+            $template RemoteLogs,"/var/log/rsyslog/%HOSTNAME%/%PROGRAMNAME%.log"
+            *.* ?RemoteLogs
+            & ~
+          insertafter: EOF
+        notify: restart rsyslog
+
+      - name: copy rsyslog.conf.j2
+        template:
+          src: conf/auditd.conf_server.j2
+          dest: /etc/audit/auditd.conf
+        notify:
+          - restart auditd
+
+
+    handlers:
+      - name: restart rsyslog
+        service:
+          name: rsyslog
+          state: restarted
+
+      - name: restart auditd
+        command: service auditd restart

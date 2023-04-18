@@ -1,0 +1,99 @@
+---
+  - name: NGINX | Install and conf NGINX
+    hosts: web
+    become: true
+    tasks:
+      - name: NGINX | Install EPEL Repo package
+        yum:
+          name: epel-release
+          state: present
+
+      - name: NGINX | Install NGINX package
+        yum:
+          name: nginx
+          state: latest
+        notify:
+          - restart nginx
+
+      - name: Install audispd-plugins package
+        yum:
+          name: audispd-plugins
+          state: latest
+        notify:
+          - restart auditd
+
+
+      - name: copy nginx conf
+        copy:
+          src: conf/nginx.conf.j2
+          dest: /etc/nginx/nginx.conf
+        notify:
+          - restart nginx
+
+
+      - name: copy audit.conf.j2
+        template:
+          src: conf/auditd.conf.j2
+          dest: /etc/audit/auditd.conf
+        notify:
+          - restart auditd
+
+      - name: Replace variable
+        replace:
+          path: "/etc/audisp/plugins.d/syslog.conf"
+          before: "direction = out"
+          regexp: "active = no"
+          replace: "active = yes"
+
+
+      - name: copy au-remote.conf.j2
+        template:
+          src: conf/au-remote.conf.j2
+          dest: "/etc/audisp/plugins.d/au-remote.conf"
+        notify:
+          - restart auditd
+
+      - name: copy auditsp_remote.conf.j2
+        template:
+          src: conf/audisp-remote.conf.j2
+          dest: /etc/audisp/audisp-remote.conf
+        notify:
+          - restart auditd
+
+
+      - name: Add lines to the end of the file /etc/audit/rules.d/audit.rules
+        become: yes
+        blockinfile:
+          path: /etc/audit/rules.d/audit.rules
+          block: |
+            -w /etc/nginx/nginx.conf -p wa -k nginx_conf
+            -w /etc/nginx/default.d/ -p wa -k nginx_conf
+
+
+      - name: edit /etc/audisp/plugins.d/syslog.conf
+        lineinfile:
+          regexp: "^active = no"
+          line: "active = yes"
+          path: /etc/audisp/plugins.d/syslog.conf
+        notify: restart auditd
+
+      - name: reboot web
+        reboot:
+
+    handlers:
+      - name: restart nginx
+        systemd:
+          name: nginx
+          state: restarted
+          enabled: yes
+
+      - name: restart auditd
+        command: service auditd restart
+
+#        systemd:
+#          name: auditd
+#          state: restarted
+#          enabled: yes
+
+
+
