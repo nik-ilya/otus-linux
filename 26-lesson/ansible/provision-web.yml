@@ -90,10 +90,3 @@
       - name: restart auditd
         command: service auditd restart
 
-#        systemd:
-#          name: auditd
-#          state: restarted
-#          enabled: yes
-
-
-
