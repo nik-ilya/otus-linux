@@ -17,8 +17,8 @@
 
 ## Выполнение.
 
-1. Создаем инфраструктуру запуская [Vagrantfile](Vagrantfile).
-2. Используя Absible запускается [provision для web](./ansible/provision-web.yml) и [provision для log](./ansible/provision-log.yml) серверов.
+1. Создаем инфраструктуру [Vagrantfile](Vagrantfile).
+2. Используя Ansible запускается [provision для web](./ansible/provision-web.yml) и [provision для log](./ansible/provision-log.yml) серверов.
 3. Проверяем результаты работы:
 
 
