@@ -89,4 +89,42 @@ traceroute to 192.168.1.2 (192.168.1.2), 30 hops max, 60 byte packets
  4  192.168.1.2 (192.168.1.2)  8.479 ms  8.412 ms  10.545 ms
 .....
 
+- Проверка с office2Server:
 
+````
+[vagrant@office2Server ~]$ ping ya.ru
+PING ya.ru (5.255.255.242) 56(84) bytes of data.
+64 bytes from ya.ru (5.255.255.242): icmp_seq=1 ttl=57 time=50.5 ms
+64 bytes from ya.ru (5.255.255.242): icmp_seq=2 ttl=57 time=50.3 ms
+64 bytes from ya.ru (5.255.255.242): icmp_seq=3 ttl=57 time=50.1 ms
+^C
+--- ya.ru ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+rtt min/avg/max/mdev = 50.133/50.337/50.560/0.253 ms
+ 
+[vagrant@office2Server ~]$ ping 192.168.255.1
+PING 192.168.255.1 (192.168.255.1) 56(84) bytes of data.
+64 bytes from 192.168.255.1: icmp_seq=1 ttl=62 time=3.49 ms
+64 bytes from 192.168.255.1: icmp_seq=2 ttl=62 time=3.73 ms
+^C
+--- 192.168.255.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 3.491/3.610/3.730/0.133 ms
+
+[vagrant@office2Server ~]$ ping 192.168.2.130
+PING 192.168.2.130 (192.168.2.130) 56(84) bytes of data.
+64 bytes from 192.168.2.130: icmp_seq=1 ttl=61 time=5.10 ms
+64 bytes from 192.168.2.130: icmp_seq=2 ttl=61 time=4.81 ms
+64 bytes from 192.168.2.130: icmp_seq=3 ttl=61 time=4.43 ms
+^C
+--- 192.168.2.130 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 4.437/4.785/5.102/0.272 ms
+
+[vagrant@office2Server ~]$ traceroute 192.168.2.130
+traceroute to 192.168.2.130 (192.168.2.130), 30 hops max, 60 byte packets
+ 1  gateway (192.168.1.1)  1.087 ms  0.981 ms  0.744 ms
+ 2  192.168.255.5 (192.168.255.5)  1.863 ms  2.290 ms  3.723 ms
+ 3  192.168.255.10 (192.168.255.10)  8.390 ms  6.652 ms  7.016 ms
+ 4  192.168.2.130 (192.168.2.130)  6.290 ms  6.221 ms  7.259 ms
+````
