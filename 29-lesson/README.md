@@ -128,3 +128,46 @@ traceroute to 192.168.2.130 (192.168.2.130), 30 hops max, 60 byte packets
  3  192.168.255.10 (192.168.255.10)  8.390 ms  6.652 ms  7.016 ms
  4  192.168.2.130 (192.168.2.130)  6.290 ms  6.221 ms  7.259 ms
 ```
+
+- Проверка с centralRouter:
+
+```
+[vagrant@centralRouter ~]$ ping ya.ru
+PING ya.ru (5.255.255.242) 56(84) bytes of data.
+64 bytes from ya.ru (5.255.255.242): icmp_seq=1 ttl=61 time=48.1 ms
+64 bytes from ya.ru (5.255.255.242): icmp_seq=2 ttl=61 time=47.7 ms
+64 bytes from ya.ru (5.255.255.242): icmp_seq=3 ttl=61 time=47.7 ms
+^C
+--- ya.ru ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 47.705/47.864/48.126/0.313 ms
+
+[vagrant@centralRouter ~]$ ping 192.168.1.2
+PING 192.168.1.2 (192.168.1.2) 56(84) bytes of data.
+64 bytes from 192.168.1.2: icmp_seq=1 ttl=63 time=3.36 ms
+64 bytes from 192.168.1.2: icmp_seq=2 ttl=63 time=2.56 ms
+^C
+--- 192.168.1.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 2.562/2.964/3.366/0.402 ms
+
+[vagrant@centralRouter ~]$ ping 192.168.2.130
+PING 192.168.2.130 (192.168.2.130) 56(84) bytes of data.
+64 bytes from 192.168.2.130: icmp_seq=1 ttl=63 time=2.68 ms
+64 bytes from 192.168.2.130: icmp_seq=2 ttl=63 time=2.34 ms
+^C
+--- 192.168.2.130 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 2.345/2.516/2.687/0.171 ms
+
+[vagrant@centralRouter ~]$ traceroute 192.168.1.2
+traceroute to 192.168.1.2 (192.168.1.2), 30 hops max, 60 byte packets
+ 1  192.168.255.6 (192.168.255.6)  1.385 ms  0.549 ms  0.520 ms
+ 2  192.168.1.2 (192.168.1.2)  2.288 ms  2.248 ms  2.487 ms
+ 
+[vagrant@centralRouter ~]$ traceroute 192.168.2.130
+traceroute to 192.168.2.130 (192.168.2.130), 30 hops max, 60 byte packets
+ 1  192.168.255.10 (192.168.255.10)  1.620 ms  1.488 ms  1.412 ms
+ 2  192.168.2.130 (192.168.2.130)  3.260 ms  3.211 ms  3.146 ms
+
+```
