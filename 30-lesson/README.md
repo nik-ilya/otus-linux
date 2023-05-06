@@ -16,9 +16,9 @@
 
 1. Так как ссылка в документации недоступна, используем CentOS Stream 8 (http://centos1.hti.pl/8-stream/isos/x86_64/CentOS-Stream-8-20230429.0-x86_64-dvd1.iso)
 
-2. Создаем [инфраструктуру](Vagrantfile)
+2. Создаем [инфраструктуру](Vagrantfile).
 
-3. Создаем [ansible playbook для PXEServer](ansible/provision.yml)
+3. Создаем [ansible playbook для PXEServer](ansible/provision.yml).
 
 4. Проверяем результат:
 
