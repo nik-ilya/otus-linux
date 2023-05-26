@@ -1,0 +1,5 @@
+[backup]
+192.168.11.160 ansible_ssh_user=vagrant
+
+[client]
+192.168.11.150 ansible_ssh_user=vagrant

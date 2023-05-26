@@ -1,0 +1,162 @@
+---
+- name: Install epel and borg on client
+  hosts: client
+  become: True
+  gather_facts: false
+  tasks:
+    - name: Install epel-release
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install borgbackup
+      yum:
+        name: borgbackup
+        state: present
+
+    - name: Create .ssh directory
+      file:
+        path: /root/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Copy public key to client
+      copy:
+        src: key/id_rsa.pub
+        dest: /root/.ssh/id_rsa.pub
+        owner: root
+        group: root
+        mode: 0755
+        force: yes
+
+    - name: Copy private key to client
+      copy:
+        src: key/id_rsa
+        dest: /root/.ssh/id_rsa
+        owner: root
+        group: root
+        mode: 0600
+        force: yes
+
+    - name: Create known_hosts
+      shell: ssh-keyscan -H 192.168.11.160 >> ~/.ssh/known_hosts
+
+
+- name: Install epel and borg on backup
+  hosts: backup
+  become: True
+  gather_facts: false
+  tasks:
+    - name: Install epel-release
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install borgbackup
+      yum:
+        name: borgbackup
+        state: present
+
+    - name: Format ext4 new disk
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/sdb
+
+    - name: Create new user "borg"
+      ansible.builtin.user:
+        name: borg
+
+    - name: Create folder /var/backup
+      file:
+        path: /var/backup
+        owner: "borg"
+        group: "borg"
+        mode: '0755'
+        state: directory
+
+
+    - name: Mount filesystem to /var/backup
+      ansible.posix.mount:
+        path: /var/backup
+        src: /dev/sdb
+        fstype: ext4
+        opts: rw
+        state: mounted
+
+    - name: deleting lost+found
+      shell: rm -rf /var/backup/lost+found
+
+
+    - name: chown borg /var/backup
+      shell: chown borg:borg /var/backup/
+
+
+    - name: .ssh directory create
+      file:
+        path: /home/borg/.ssh
+        state: directory
+        owner: borg
+        group: borg
+
+    - name: add public key to backup
+      template:
+        src: key/id_rsa.pub
+        dest: "/home/borg/.ssh/authorized_keys"
+
+
+
+- name: Config backup process
+  hosts: client
+  become: True
+  gather_facts: false
+  tasks:
+
+    - name: init repo
+      shell: |
+        export BORG_PASSPHRASE='Otus1234'
+        borg init --encryption=repokey borg@192.168.11.160:/var/backup
+      become: true
+
+
+    - name: template borg-backup.service to client
+      template:
+        src: templates/borg-backup.service.j2
+        dest: "/etc/systemd/system/borg-backup.service"
+
+    - name: template borg-backup.timer to client
+      template:
+        src: templates/borg-backup.timer.j2
+        dest: "/etc/systemd/system/borg-backup.timer"
+
+    - name: template borg-backup.conf to client
+      template:
+        src: templates/borg-backup.conf.j2
+        dest: "/etc/rsyslog.d/borg-backup.conf"
+
+    - name: template borg-backup.rotate to client
+      template:
+        src: templates/borg-backup.rotate.j2
+        dest: "/etc/logrotate.d/borg-backup.conf"
+
+
+    - name: start borg-backup timer
+      systemd:
+        name: borg-backup.timer
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: start borg-backup service
+      systemd:
+        name: borg-backup.service
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: restart rsyslog
+      systemd:
+        name: rsyslog
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
