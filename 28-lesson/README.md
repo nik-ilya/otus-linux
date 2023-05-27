@@ -1,104 +1,23 @@
-# Домашнее задание 14. "PAM"
+# Домашнее задание 17. "Резервное копирование"
 
 ## Домашнее задание.
 
-Запретить всем пользователям, кроме группы admin логин в выходные (суббота и воскресенье), без учета праздников
+1. Настроить стенд Vagrant с двумя виртуальными машинами: backup_server и client.
+2. Настроить удаленный бекап каталога /etc c сервера client при помощи borgbackup. Резервные копии должны соответствовать следующим критериям:
+- директория для резервных копий /var/backup. Это должна быть отдельная точка монтирования. В данном случае для демонстрации размер не принципиален, достаточно будет и 2GB;
+- репозиторий дле резервных копий должен быть зашифрован ключом или паролем - на ваше усмотрение;
+- имя бекапа должно содержать информацию о времени снятия бекапа;
+- глубина бекапа должна быть год, хранить можно по последней копии на конец месяца, кроме последних трех. Последние три месяца должны содержать копии на каждый день. Т.е. должна быть правильно настроена политика удаления старых бэкапов;
+- резервная копия снимается каждые 5 минут. Такой частый запуск в целях демонстрации;
+- написан скрипт для снятия резервных копий. Скрипт запускается из соответствующей Cron джобы, либо systemd timer-а - на ваше усмотрение;
+- настроено логирование процесса бекапа. Для упрощения можно весь вывод перенаправлять в logger с соответствующим тегом. Если настроите не в syslog, то обязательна ротация логов.
+3. Запустите стенд на 30 минут.
+4. Убедитесь что резервные копии снимаются.
+5. Остановите бекап, удалите (или переместите) директорию /etc и восстановите ее из бекапа.
+Для сдачи домашнего задания ожидаем настроенные стенд, логи процесса бэкапа и описание процесса восстановления. Формат сдачи ДЗ - vagrant + ansible.
+
 
 ## Выполнение.
-
-Создаём пользователей otusadm и otus:
-```
-[root@pam ~]# sudo useradd otusadm && sudo useradd otus
-```
-
-Создаём пользователям пароли:
-```
-[root@pam ~]# echo "Otus2022!" | sudo passwd --stdin otusadm && echo "Otus2022!" | sudo passwd --stdin otus
-Changing password for user otusadm.
-passwd: all authentication tokens updated successfully.
-Changing password for user otus.
-passwd: all authentication tokens updated successfully.
-```
-
-Создаём группу admin:
-```
-[root@pam ~]# sudo groupadd -f admin
-```
-
-Добавляем пользователей vagrant,root и otusadm в группу admin:
-```
-[root@pam ~]# sudo usermod otusadm -a -G admin
-[root@pam ~]# sudo usermod root -a -G admin
-[root@pam ~]# sudo usermod vagrant -a -G admin
-```
-
-После создания пользователей проверяем возможность подключения по SSH к нашей ВМ в рабочий день.
-```
-root@otuslinux-ubu:~# ssh otus@192.168.57.10
-The authenticity of host '192.168.57.10 (192.168.57.10)' can't be established.
-ECDSA key fingerprint is SHA256:F2XfjLE2I7RgMXO6p0gyFTSsXOuZLqHmJynvePsJJjU.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-Warning: Permanently added '192.168.57.10' (ECDSA) to the list of known hosts.
-otus@192.168.57.10's password: 
-[otus@pam ~]$ whoami
-otus
-
-root@otuslinux-ubu:~# ssh otusadm@192.168.57.10
-otusadm@192.168.57.10's password: 
-[otusadm@pam ~]$ whoami
-otusadm
-```
-
-Далее создадим скрипт login.sh, по которому все пользователи кроме тех, что указаны в группе admin не смогут подключаться в выходные дни:
-
-```
-#!/bin/bash
-#Первое условие: если день недели суббота или воскресенье
-if [ $(date +%a) = "Sat" ] || [ $(date +%a) = "Sun" ]; then
- #Второе условие: входит ли пользователь в группу admin
- if getent group admin | grep -qw "$PAM_USER"; then
-        #Если пользователь входит в группу admin, то он может подключиться
-        exit 0
-      else
-        #Иначе ошибка (не сможет подключиться)
-        exit 1
-    fi
-  #Если день не выходной, то подключиться может любой пользователь
-  else
-    exit 0
-fi
-```
-
-Укажем в файле /etc/pam.d/sshd модуль pam_exec и наш скрипт:
-
-```
-[vagrant@pam ~]$ cat  /etc/pam.d/sshd 
-#%PAM-1.0
-auth       substack     password-auth
-auth       include      postlogin
-account    required     pam_exec.so /usr/local/bin/login.sh
-account    required     pam_nologin.so
-
-```
-
-Проверим доступ в выходной день:
-```
-root@otuslinux-ubu:~# date
-Sat 01 Apr 2023 11:50:14 AM EDT
-
-root@otuslinux-ubu:~# ssh otus@192.168.57.10
-otus@192.168.57.10's password: 
-/usr/local/bin/login.sh failed: exit code 1
-Connection closed by 192.168.57.10 port 22
-
-root@otuslinux-ubu:~# ssh otusadm@192.168.57.10
-otusadm@192.168.57.10's password: 
-Last login: Fri Mar 31 03:49:05 2023 from 192.168.57.1
-[otusadm@pam ~]$ 
-```
-
-
-
 
 
 
