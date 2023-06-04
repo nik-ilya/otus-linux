@@ -1,0 +1,35 @@
+---
+- name: YML centralRouter
+  hosts: all
+  become: true
+  vars:
+    ansible_verbosity: 2
+
+  tasks:
+    - name: add default gateway for centralRouter
+      lineinfile:
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1
+        line: GATEWAY=192.168.255.1
+      notify:
+        - restart network
+
+    - name: add routes
+      template:
+        src: "centralRouter/{{  item  }}"
+        dest: /etc/sysconfig/network-scripts/
+      loop:
+        - route-eth1
+        - route-eth5
+        - route-eth6
+      notify:
+        - restart network
+
+    - name: Restart network command
+      command: systemctl restart network
+
+
+  handlers:
+    - name: restart network
+      service:
+        name: network
+        state: restarted

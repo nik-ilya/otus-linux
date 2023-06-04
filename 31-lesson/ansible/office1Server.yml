@@ -1,0 +1,32 @@
+---
+- name: YML office1Server
+  hosts: all
+  become: true
+  vars:
+    ansible_verbosity: 2
+
+  tasks:
+    - name: Add default gateway for office1Router
+      lineinfile:
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1
+        line: GATEWAY=192.168.2.1
+      notify:
+        - restart network
+
+    - name: Add routes
+      template:
+        src: '{{ inventory_hostname }}/{{  item  }}'
+        dest: /etc/sysconfig/network-scripts/
+      loop:
+        - route-eth1
+      notify: restart network
+
+    - name: Restart network command
+      command: systemctl restart network
+
+  handlers:
+    - name: restart network
+      service:
+        name: network
+        state: restarted
+
