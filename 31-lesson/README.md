@@ -71,3 +71,15 @@ Warning: Permanently added '192.168.255.1' (ECDSA) to the list of known hosts.
 [root@inetRouter ~]# 
 
 ```
+
+
+
+```
+root@otuslinux-new:~/otus-linux/31-lesson# curl 192.168.50.13:8080
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Welcome to CentOS</title>
+  <style rel="stylesheet" type="text/css"> 
+......
+```
