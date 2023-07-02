@@ -63,7 +63,7 @@ MAC Address: 08:00:27:D1:E8:25 (Cadmus Computer Systems)
 Nmap done: 1 IP address (1 host up) scanned in 0.34 seconds
 ```
 
-Повторно просеряем доступ по SSH, на этот раз успешно:
+Повторно проверяем доступ по SSH, на этот раз успешно:
 ```
 [root@centralRouter ~]# ssh 192.168.255.1
 The authenticity of host '192.168.255.1 (192.168.255.1)' can't be established.
@@ -78,7 +78,7 @@ Warning: Permanently added '192.168.255.1' (ECDSA) to the list of known hosts.
 
 На ВМ centralServer поднимаем nginx.
 На ВМ inetRouter2 прописан PREROUTING пакетов на ВМ centralServer, также в POSTROUTING прописан маскарад.
-Командой curl проверим проброс порта с хостовой машины до centralRouting:
+Командой curl проверим проброс порта с хостовой машины до centralServer:
 
 ```
 root@otuslinux-new:~/otus-linux/31-lesson# curl 192.168.50.13:8080
