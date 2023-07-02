@@ -23,6 +23,12 @@
     - name: Restart network command
       command: systemctl restart network
 
+    - name: nginx restart
+      service:
+        name: nginx
+        state: restarted
+        enabled: true
+
   handlers:
     - name: restart network
       service:

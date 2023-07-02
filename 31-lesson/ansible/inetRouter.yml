@@ -12,8 +12,32 @@
           - iptables
           - iptables-services
           - mc
+          - nano
         state: present
         update_cache: true
+
+    - name: .ssh directory create
+      file:
+        path: /root/.ssh
+        state: directory
+        owner: root
+        group: root
+
+    - name: add public key to inetRouter
+      template:
+        src: key/id_rsa.pub
+        dest: "/root/.ssh/authorized_keys"
+
+    - name: Uncomment PermitRootLogin in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?(PermitRootLogin)'
+        line: 'PermitRootLogin yes'
+
+    - name: Restart SSH service
+      systemd:
+        name: sshd
+        state: restarted
 
     - name: copy iptables config to InetRouter
       template:
@@ -31,6 +55,24 @@
         - route-eth1
       notify:
         - restart network
+
+    - name: Copy iptables.rule
+      template:
+        src: inetRouter/iptables.rule.j2
+        dest: /root/iptables.rule
+
+    - name: Start iptables
+      systemd:
+        name: iptables
+        enabled: true
+        state: started
+
+    - name: Add rules iptables
+      shell: iptables-restore < /root/iptables.rule
+
+    - name: Save iptables rules
+      shell: service iptables save
+
 
     - name: start and enable iptables service
       service:

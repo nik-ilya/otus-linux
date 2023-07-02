@@ -11,15 +11,20 @@
         name: traceroute
         state: present
 
+    - name: Install nginx
+      yum:
+        name: nginx
+        state: present
+      when: (ansible_hostname == "centralServer")
+
     - name: Set up forward packages across routers
       sysctl:
         name: net.ipv4.conf.all.forwarding
         value: "1"
         state: present
       when: (ansible_hostname == "centralRouter") or
-        (ansible_hostname == "inetRouter")   or
-        (ansible_hostname == "office1Router")   or
-        (ansible_hostname == "office2Router")
+        (ansible_hostname == "inetRouter") or
+        (ansible_hostname == "inetRouter2")
       notify: restart network
 
     - name: Disable default route
@@ -28,10 +33,7 @@
         line: DEFROUTE=no
       when: (ansible_hostname == "centralRouter") or
         (ansible_hostname == "centralServer") or
-        (ansible_hostname == "office1Router")  or
-        (ansible_hostname == "office1Server") or
-        (ansible_hostname == "office2Router")  or
-        (ansible_hostname == "office2Server")
+        (ansible_hostname == "inetRouter2")
       notify: restart network
 
   handlers:
