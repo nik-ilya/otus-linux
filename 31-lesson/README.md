@@ -13,7 +13,7 @@
 
 Для выполнения данного ДЗ используем стенд из ДЗ №18 "Архитектура сетей" и добавим к этому стенду сервер inetRouter2.
 
-###1. Реализация knocking port:
+### Реализация knocking port:
 
 1. на ВМ inetRouter устанавливаются пакеты iptables, iptables-services.
 2. на ВМ inetRouter пишется правило для реализации knocking port.
