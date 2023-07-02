@@ -1,0 +1,90 @@
+---
+- name: YML inetRouter
+  hosts: all
+  become: true
+  vars:
+    ansible_verbosity: 2
+
+  tasks:
+    - name: install iptables service
+      yum:
+        name:
+          - iptables
+          - iptables-services
+          - mc
+          - nano
+        state: present
+        update_cache: true
+
+    - name: .ssh directory create
+      file:
+        path: /root/.ssh
+        state: directory
+        owner: root
+        group: root
+
+    - name: add public key to inetRouter
+      template:
+        src: key/id_rsa.pub
+        dest: "/root/.ssh/authorized_keys"
+
+    - name: Uncomment PermitRootLogin in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?(PermitRootLogin)'
+        line: 'PermitRootLogin yes'
+
+    - name: Restart SSH service
+      systemd:
+        name: sshd
+        state: restarted
+
+    - name: copy iptables config to InetRouter
+      template:
+        src: inetRouter/internetRouter.iptables.conf.j2
+        dest: /etc/sysconfig/iptables
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: add routes
+      template:
+        src: "inetRouter/{{  item  }}"
+        dest: /etc/sysconfig/network-scripts/
+      loop:
+        - route-eth1
+      notify:
+        - restart network
+
+    - name: Copy iptables.rule
+      template:
+        src: inetRouter/iptables.rule.j2
+        dest: /root/iptables.rule
+
+    - name: Start iptables
+      systemd:
+        name: iptables
+        enabled: true
+        state: started
+
+    - name: Add rules iptables
+      shell: iptables-restore < /root/iptables.rule
+
+    - name: Save iptables rules
+      shell: service iptables save
+
+
+    - name: start and enable iptables service
+      service:
+        name: iptables
+        state: restarted
+        enabled: true
+
+    - name: Restart network command
+      command: systemctl restart network
+
+  handlers:
+    - name: restart network
+      service:
+        name: network
+        state: restarted
