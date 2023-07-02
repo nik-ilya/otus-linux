@@ -21,13 +21,15 @@
 4. после простукивания портов на inetRouter можно зайти в течение 30 секунд.
 
    Проверка работы скрипта:
- 
+
+Проверка недоступности доступа по ssh:
 ```
-[root@centralRouter ~]# 
 [root@centralRouter ~]# ssh 192.168.255.1
 ssh: connect to host 192.168.255.1 port 22: Connection timed out
-[root@centralRouter ~]# 
-[root@centralRouter ~]# 
+```
+
+Запускаем скрипт knock.sh
+```
 [root@centralRouter ~]# ./knock.sh 192.168.255.1 6666 7777 8888
 
 Starting Nmap 6.40 ( http://nmap.org ) at 2023-07-02 12:09 UTC
@@ -59,9 +61,10 @@ PORT     STATE    SERVICE
 MAC Address: 08:00:27:D1:E8:25 (Cadmus Computer Systems)
 
 Nmap done: 1 IP address (1 host up) scanned in 0.34 seconds
-[root@centralRouter ~]# 
-[root@centralRouter ~]# 
-[root@centralRouter ~]# 
+```
+
+Повторно просеряем доступ по SSH, на этот раз успешно:
+```
 [root@centralRouter ~]# ssh 192.168.255.1
 The authenticity of host '192.168.255.1 (192.168.255.1)' can't be established.
 ECDSA key fingerprint is SHA256:2sE1GcNT8ANRsXs/qIucDlp5YrTZoSapKSl4g2dvqqs.
@@ -69,10 +72,13 @@ ECDSA key fingerprint is MD5:0c:8e:4d:d7:b5:cc:37:33:46:d2:f2:59:83:a4:11:bf.
 Are you sure you want to continue connecting (yes/no)? yes
 Warning: Permanently added '192.168.255.1' (ECDSA) to the list of known hosts.
 [root@inetRouter ~]# 
-
 ```
 
+### Реализация проброса порта при помощи iptables:
 
+На ВМ centralServer поднимаем nginx.
+На ВМ inetRouter2 прописан PREROUTING пакетов на ВМ centralServer, также в POSTROUTING прописан маскарад.
+Командой curl проверим проброс порта с хостовой машины до centralRouting:
 
 ```
 root@otuslinux-new:~/otus-linux/31-lesson# curl 192.168.50.13:8080
@@ -83,3 +89,10 @@ root@otuslinux-new:~/otus-linux/31-lesson# curl 192.168.50.13:8080
   <style rel="stylesheet" type="text/css"> 
 ......
 ```
+
+
+### Дефолт в инет оставить через inetRouter.
+
+ВМ inetRouter2 и centralServer используют в качестве шлюза ВМ centralRouter, у которого шлюз по-умолчанию ВМ inetRouter.
+Т.о. выход в интернет у всех ВМ осуществляется через сервер inetRouter с ip 192.168.255.1.
+
