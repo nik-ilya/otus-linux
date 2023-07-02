@@ -22,3 +22,52 @@
 
    Проверка работы скрипта:
  
+```
+[root@centralRouter ~]# 
+[root@centralRouter ~]# ssh 192.168.255.1
+ssh: connect to host 192.168.255.1 port 22: Connection timed out
+[root@centralRouter ~]# 
+[root@centralRouter ~]# 
+[root@centralRouter ~]# ./knock.sh 192.168.255.1 6666 7777 8888
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2023-07-02 12:09 UTC
+Warning: 192.168.255.1 giving up on port because retransmission cap hit (0).
+Nmap scan report for 192.168.255.1
+Host is up (0.0014s latency).
+PORT     STATE    SERVICE
+6666/tcp filtered irc
+MAC Address: 08:00:27:D1:E8:25 (Cadmus Computer Systems)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.37 seconds
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2023-07-02 12:09 UTC
+Warning: 192.168.255.1 giving up on port because retransmission cap hit (0).
+Nmap scan report for 192.168.255.1
+Host is up (0.0013s latency).
+PORT     STATE    SERVICE
+7777/tcp filtered cbt
+MAC Address: 08:00:27:D1:E8:25 (Cadmus Computer Systems)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.33 seconds
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2023-07-02 12:09 UTC
+Warning: 192.168.255.1 giving up on port because retransmission cap hit (0).
+Nmap scan report for 192.168.255.1
+Host is up (0.0011s latency).
+PORT     STATE    SERVICE
+8888/tcp filtered sun-answerbook
+MAC Address: 08:00:27:D1:E8:25 (Cadmus Computer Systems)
+
+Nmap done: 1 IP address (1 host up) scanned in 0.34 seconds
+[root@centralRouter ~]# 
+[root@centralRouter ~]# 
+[root@centralRouter ~]# 
+[root@centralRouter ~]# ssh 192.168.255.1
+The authenticity of host '192.168.255.1 (192.168.255.1)' can't be established.
+ECDSA key fingerprint is SHA256:2sE1GcNT8ANRsXs/qIucDlp5YrTZoSapKSl4g2dvqqs.
+ECDSA key fingerprint is MD5:0c:8e:4d:d7:b5:cc:37:33:46:d2:f2:59:83:a4:11:bf.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.255.1' (ECDSA) to the list of known hosts.
+[root@inetRouter ~]# 
+
+```
