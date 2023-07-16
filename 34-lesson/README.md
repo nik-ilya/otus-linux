@@ -153,7 +153,7 @@ listening on enp0s9, link-type EN10MB (Ethernet), capture size 262144 bytes
 5. Для симметричного роутинга необходимо изменить переменную **symmetric_routing** на **true** в файле *ansible/defaults/main.yml* и добавить стоимость интерфейса *enp0s8* на роутере **router2** равным 1000. Сделать это можно с помощью Ansible, выполнив команду:
 **ansible-playbook -i ansible/hosts -l all ansible/provision.yml -t setup_ospf -e "host_key_checking=false"**
 
-Для проверки также пропингуем 192.168.20.1 с **router1**, а на **router2** запустим *tcpdump* чтобы убедиться в симметричном роутинге: 
+Для проверки также пропингуем 192.168.20.1 с **router1**, а на **router2** запустим *tcpdump*, чтобы убедиться в симметричном роутинге: 
 
 ```
 root@router2:~# tcpdump -i enp0s9
