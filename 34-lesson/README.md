@@ -20,7 +20,7 @@
 3. Используя пакет FRR производим настройку OSPF на каждой виртуальной машине (роутере) средставами [Ansible](ansible/provision.yml).
    После этого OSPF поднят на всех машинах и все сети должны быть доступны с любого роутера:
 
-   ```
+```
 root@router1:~# ip r
 default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
 10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 
@@ -77,5 +77,4 @@ O   192.168.10.0/24 [110/45] is directly connected, enp0s10, weight 1, 23:52:12
 C>* 192.168.10.0/24 is directly connected, enp0s10, 23:52:13
 O>* 192.168.20.0/24 [110/245] via 10.0.12.2, enp0s9, weight 1, 23:51:32
 O>* 192.168.30.0/24 [110/145] via 10.0.12.2, enp0s9, weight 1, 23:51:37
-
-   ```
+```
