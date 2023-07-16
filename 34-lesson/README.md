@@ -150,6 +150,29 @@ listening on enp0s9, link-type EN10MB (Ethernet), capture size 262144 bytes
 ```
 Видим, что пакеты на router2 идут через разные интерфейсы, т.о. асимметричный роутинг работает.
 
-5. 
+5. Для симметричного роутинга необходимо изменить переменную **symmetric_routing** на **true** в файле **ansible/defaults/main.yml** и добавить стоимость интерфейса enp0s8 на роутере router2 равным 1000. Сделать это можно с помощью Ansible выполнив команду:
+**ansible-playbook -i ansible/hosts -l all ansible/provision.yml -t setup_ospf -e "host_key_checking=false"**
+
+Также пропингуем 192.168.20.1 с router1, а на router2 запустим tcpdump чтобы убедиться в симметричном роутинге: 
+
+```
+root@router2:~# tcpdump -i enp0s9
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on enp0s9, link-type EN10MB (Ethernet), capture size 262144 bytes
+18:06:34.858030 IP 10.0.11.1 > ospf-all.mcast.net: OSPFv2, Hello, length 48
+18:06:34.861860 IP router2 > ospf-all.mcast.net: OSPFv2, Hello, length 48
+18:06:35.011821 IP 10.0.12.1 > router2: ICMP echo request, id 4, seq 36, length 64
+18:06:35.011872 IP router2 > 10.0.12.1: ICMP echo reply, id 4, seq 36, length 64
+18:06:36.086148 IP 10.0.12.1 > router2: ICMP echo request, id 4, seq 37, length 64
+18:06:36.086202 IP router2 > 10.0.12.1: ICMP echo reply, id 4, seq 37, length 64
+18:06:37.088010 IP 10.0.12.1 > router2: ICMP echo request, id 4, seq 38, length 64
+18:06:37.088070 IP router2 > 10.0.12.1: ICMP echo reply, id 4, seq 38, length 64
+18:06:38.090459 IP 10.0.12.1 > router2: ICMP echo request, id 4, seq 39, length 64
+18:06:38.090511 IP router2 > 10.0.12.1: ICMP echo reply, id 4, seq 39, length 64
+18:06:39.116936 IP 10.0.12.1 > router2: ICMP echo request, id 4, seq 40, length 64
+18:06:39.116984 IP router2 > 10.0.12.1: ICMP echo reply, id 4, seq 40, length 64
+```
+
+
    
 
