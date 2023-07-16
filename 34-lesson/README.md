@@ -78,3 +78,78 @@ C>* 192.168.10.0/24 is directly connected, enp0s10, 23:52:13
 O>* 192.168.20.0/24 [110/245] via 10.0.12.2, enp0s9, weight 1, 23:51:32
 O>* 192.168.30.0/24 [110/145] via 10.0.12.2, enp0s9, weight 1, 23:51:37
 ```
+4. Изначально файл конфигурации роутеров frr.conf сформирован на работу в режиме ассиметричного роутинга (на router1 стоимость интерфейса enp0s8 установлена 1000).
+   Для проверки ассиметричного роутинга пропингуем 192.168.20.1 с router1, а на интерфейсах router2 запустим tcpdump:
+
+```
+root@router1:~# ip route 
+default via 10.0.2.2 dev enp0s3 proto dhcp src 10.0.2.15 metric 100 
+10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 
+10.0.2.2 dev enp0s3 proto dhcp scope link src 10.0.2.15 metric 100 
+10.0.10.0/30 dev enp0s8 proto kernel scope link src 10.0.10.1 
+10.0.11.0/30 nhid 29 via 10.0.12.2 dev enp0s9 proto ospf metric 20 
+10.0.12.0/30 dev enp0s9 proto kernel scope link src 10.0.12.1 
+192.168.10.0/24 dev enp0s10 proto kernel scope link src 192.168.10.1 
+192.168.20.0/24 nhid 29 via 10.0.12.2 dev enp0s9 proto ospf metric 20 
+192.168.30.0/24 nhid 29 via 10.0.12.2 dev enp0s9 proto ospf metric 20 
+
+root@router1:~# vtysh
+
+Hello, this is FRRouting (version 8.5.2).
+Copyright 1996-2005 Kunihiro Ishiguro, et al.
+
+router1# sh ip route 192.168.20.1
+Routing entry for 192.168.20.0/24
+  Known via "ospf", distance 110, metric 245, best
+  Last update 1d00h14m ago
+  * 10.0.12.2, via enp0s9, weight 1
+
+router1# ping 192.168.20.1
+PING 192.168.20.1 (192.168.20.1) 56(84) bytes of data.
+64 bytes from 192.168.20.1: icmp_seq=1 ttl=64 time=2.82 ms
+64 bytes from 192.168.20.1: icmp_seq=2 ttl=64 time=3.71 ms
+64 bytes from 192.168.20.1: icmp_seq=3 ttl=64 time=2.33 ms
+64 bytes from 192.168.20.1: icmp_seq=4 ttl=64 time=2.39 ms
+64 bytes from 192.168.20.1: icmp_seq=5 ttl=64 time=3.82 ms
+64 bytes from 192.168.20.1: icmp_seq=6 ttl=64 time=2.82 ms
+64 bytes from 192.168.20.1: icmp_seq=7 ttl=64 time=2.07 ms
+
+
+root@router2:~# tcpdump -i enp0s8
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on enp0s8, link-type EN10MB (Ethernet), capture size 262144 bytes
+17:52:23.245100 IP 10.0.10.1 > ospf-all.mcast.net: OSPFv2, Hello, length 48
+17:52:23.974712 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 45, length 64
+17:52:24.729079 IP router2 > ospf-all.mcast.net: OSPFv2, Hello, length 48
+17:52:24.976488 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 46, length 64
+17:52:25.978513 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 47, length 64
+17:52:26.980982 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 48, length 64
+17:52:27.982399 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 49, length 64
+17:52:28.983628 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 50, length 64
+17:52:29.985804 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 51, length 64
+17:52:31.000451 IP router2 > 10.0.12.1: ICMP echo reply, id 3, seq 52, length 64
+^C
+10 packets captured
+10 packets received by filter
+0 packets dropped by kernel
+
+
+root@router2:~# tcpdump -i enp0s9
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on enp0s9, link-type EN10MB (Ethernet), capture size 262144 bytes
+17:52:37.012466 IP 10.0.12.1 > router2: ICMP echo request, id 3, seq 58, length 64
+17:52:38.014561 IP 10.0.12.1 > router2: ICMP echo request, id 3, seq 59, length 64
+17:52:39.016450 IP 10.0.12.1 > router2: ICMP echo request, id 3, seq 60, length 64
+17:52:40.017576 IP 10.0.12.1 > router2: ICMP echo request, id 3, seq 61, length 64
+17:52:41.031416 IP 10.0.12.1 > router2: ICMP echo request, id 3, seq 62, length 64
+17:52:42.057209 IP 10.0.12.1 > router2: ICMP echo request, id 3, seq 63, length 64
+^C
+6 packets captured
+6 packets received by filter
+0 packets dropped by kernel
+```
+Видим, что пакеты на router2 идут через разные интерфейсы, т.о. асимметричный роутинг работает.
+
+5. 
+   
+
