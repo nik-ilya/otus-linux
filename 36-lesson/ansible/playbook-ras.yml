@@ -1,0 +1,79 @@
+---
+- name: configure ras
+  hosts: ras
+  become: true
+  tasks:
+    - name: Install easy-rsa
+      dnf:
+        name: easy-rsa-3.0.8
+        state: present
+
+    - name: Generate PKI
+      shell: cd /etc/openvpn/ && /usr/share/easy-rsa/3.0.8/easyrsa init-pki
+
+    - name: Create certification authority (CA)
+      shell: cd /etc/openvpn/ && echo 'rasvpn' | /usr/share/easy-rsa/3.0.8/easyrsa build-ca nopass
+
+    - name: Key and certificate request
+      shell: cd /etc/openvpn/ && echo 'rasvpn' | /usr/share/easy-rsa/3.0.8/easyrsa gen-req server nopass
+
+    - name: Sign certificate request
+      shell: cd /etc/openvpn/ && echo 'yes' | /usr/share/easy-rsa/3.0.8/easyrsa sign-req server server
+
+    - name: Defi-Hellman key Generate
+      shell: cd /etc/openvpn/ && /usr/share/easy-rsa/3.0.8/easyrsa gen-dh
+
+    - name: Create HMAC key
+      shell: cd /etc/openvpn/ && openvpn --genkey --secret ca.key
+
+    - name: Generate client request
+      shell: cd /etc/openvpn/ && echo 'client' | /usr/share/easy-rsa/3.0.8/easyrsa gen-req client nopass
+
+    - name: Sign client request
+      shell: cd /etc/openvpn/ && echo 'yes' | /usr/share/easy-rsa/3.0.8/easyrsa sign-req client client
+
+    - name: copy openvpn@.service
+      copy:
+        src: templates/openvpn@.service.j2
+        dest: /etc/systemd/system/openvpn@.service
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: Iroute for client
+      shell: echo 'iroute 10.10.30.0 255.255.255.0' > /etc/openvpn/client/client
+
+    - name: Fetch ca.crt to host
+      fetch:
+        src: /etc/openvpn/pki/ca.crt
+        dest: ./client/
+        flat: true
+
+    - name: Fetch client.crt to host
+      fetch:
+        src: /etc/openvpn/pki/issued/client.crt
+        dest: ./client/
+        flat: true
+
+    - name: Fetch client.key to host
+      fetch:
+        src: /etc/openvpn/pki/private/client.key
+        dest: ./client/
+        flat: true
+
+    - name: Copy server configuration to server machine
+      copy:
+        src: templates/ras/server.conf
+        dest: /etc/openvpn/server.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: start openvpn@server.service
+
+  handlers:
+    - name: start openvpn@server.service
+      systemd:
+        name: openvpn@server.service
+        state: started
+        enabled: yes
+

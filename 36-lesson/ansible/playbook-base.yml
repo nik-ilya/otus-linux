@@ -1,0 +1,23 @@
+---
+- name: Lesson VPN - base configuration
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install EPEL
+      ansible.builtin.dnf:
+       name:
+         - epel-release
+       state: latest
+       install_weak_deps: false
+
+    - name: Install OpenVPN
+      ansible.builtin.dnf:
+        name:
+          - openvpn
+          - iperf3
+        state: latest
+
+    - name: Disable SELinux
+      ansible.posix.selinux:
+        state: disabled

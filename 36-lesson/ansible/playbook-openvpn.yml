@@ -1,0 +1,80 @@
+---
+- name: Lesson VPN - openvpn
+  hosts: all
+  become: true
+  tasks:
+    - name: copy static.key
+      copy:
+        src: templates/static.key
+        dest: /etc/openvpn/static.key
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: copy openvpn@.service
+      copy:
+        src: templates/openvpn@.service.j2
+        dest: /etc/systemd/system/openvpn@.service
+        owner: root
+        group: root
+        mode: 0600
+
+
+- name: configure server
+  hosts: server
+  become: true
+  tasks:
+    - name: copy server.conf
+      copy:
+        src: templates/server/server.conf.j2
+        dest: /etc/openvpn/server.conf
+      notify: start openvpn@server.service
+
+    - name: copy server-tun.conf
+      copy:
+        src: templates/server/server-tun.conf.j2
+        dest: /etc/openvpn/server-tun.conf
+#      notify: start openvpn@server-tun.service
+
+  handlers:
+    - name: start openvpn@server.service
+      systemd:
+        name: openvpn@server.service
+        state: started
+        enabled: yes
+
+#    - name: start openvpn@server-tun.service
+#      systemd:
+#        name: openvpn@server-tun.service
+#        state: started
+#        enabled: yes
+
+
+- name: configure client
+  hosts: client
+  become: true
+  tasks:
+    - name: copy client.conf
+      copy:
+        src: templates/client/client.conf.j2
+        dest: /etc/openvpn/client.conf
+      notify: start openvpn@client.service
+
+    - name: copy client-tun.conf
+      copy:
+        src: templates/client/client-tun.conf.j2
+        dest: /etc/openvpn/client-tun.conf
+ #     notify: start openvpn@client-tun.service
+
+  handlers:
+     - name: start openvpn@client.service
+       systemd:
+         name: openvpn@client.service
+         state: started
+         enabled: yes
+
+#     - name: start openvpn@client-tun.service
+#       systemd:
+#         name: openvpn@client-tun.service
+#         state: started
+#         enabled: yes
