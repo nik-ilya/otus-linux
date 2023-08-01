@@ -66,7 +66,7 @@ Connecting to host 10.10.10.1, port 5201
 iperf Done.
 ```
    
-   1.6. Отключаем **TAP** и включаем **TUN** на двух мащинах.
+   1.6. Отключаем **TAP** и включаем **TUN** на двух машинах.
 
 ```
 [root@server ~]# systemctl stop openvpn@server
@@ -92,3 +92,42 @@ iperf Done.
     inet6 fe80::5d9c:8885:38:cec0/64 scope link stable-privacy 
        valid_lft forever preferred_lft forever
 ```
+
+   1.8. Проверяем командой *ping* доступность сервера:
+```
+[root@client ~]# ping 10.10.20.1
+PING 10.10.20.1 (10.10.20.1) 56(84) bytes of data.
+64 bytes from 10.10.20.1: icmp_seq=1 ttl=64 time=3.14 ms
+64 bytes from 10.10.20.1: icmp_seq=2 ttl=64 time=2.25 ms
+64 bytes from 10.10.20.1: icmp_seq=3 ttl=64 time=3.37 ms
+64 bytes from 10.10.20.1: icmp_seq=4 ttl=64 time=2.24 ms
+64 bytes from 10.10.20.1: icmp_seq=5 ttl=64 time=1.93 ms
+^C
+--- 10.10.20.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4006ms
+rtt min/avg/max/mdev = 1.933/2.585/3.368/0.565 ms
+```
+
+ 1.9. Запускаем *iperf* для измерения скорости канала между машинами:
+
+```
+[root@client ~]# iperf3 -c 10.10.20.1 -t 40 -i 5
+Connecting to host 10.10.20.1, port 5201
+[  5] local 10.10.20.2 port 40976 connected to 10.10.20.1 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-5.01   sec  14.0 MBytes  23.4 Mbits/sec    9   99.1 KBytes       
+[  5]   5.01-10.02  sec  14.7 MBytes  24.5 Mbits/sec    4   95.1 KBytes       
+[  5]  10.02-15.01  sec  15.0 MBytes  25.2 Mbits/sec    5   91.2 KBytes       
+[  5]  15.01-20.02  sec  14.7 MBytes  24.7 Mbits/sec    8   87.2 KBytes       
+[  5]  20.02-25.02  sec  14.8 MBytes  24.8 Mbits/sec    3   85.9 KBytes       
+[  5]  25.02-30.02  sec  14.6 MBytes  24.5 Mbits/sec    4   95.1 KBytes       
+[  5]  30.02-35.02  sec  15.3 MBytes  25.7 Mbits/sec    4    115 KBytes       
+[  5]  35.02-40.00  sec  14.2 MBytes  24.0 Mbits/sec    5    110 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-40.00  sec   117 MBytes  24.6 Mbits/sec   42             sender
+[  5]   0.00-40.08  sec   117 MBytes  24.5 Mbits/sec                  receiver
+
+iperf Done.
+```
+
