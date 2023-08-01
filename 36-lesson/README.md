@@ -140,5 +140,8 @@ iperf Done.
    
 ### RAS.
 
+   2.1. Разверачиваем новую машину ras. [Vagrantfile](Vagrantfile).
+   
+   2.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [ras](ansible/playbook-ras.yml).
 
 
