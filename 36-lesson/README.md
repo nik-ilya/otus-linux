@@ -14,7 +14,8 @@
 
 ### 1. TUN/TAP. 
    1.1. Разверачиваем две машины - server  и client [Vagrantfile](Vagrantfile).
-   1.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [openvpn](ansible/playbook=openvpn.yml).
+   
+   1.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [openvpn](ansible/playbook-openvpn.yml).
 
 
    
