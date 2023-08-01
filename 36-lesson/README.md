@@ -144,4 +144,6 @@ iperf Done.
    
    2.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [ras](ansible/playbook-ras.yml).
 
+   2.3. После настройки машины ras запускаем openvpn на локальной машине. используя конфиг файл [client.conf](client.conf)
+
 
