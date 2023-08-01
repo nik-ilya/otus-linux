@@ -12,12 +12,12 @@
 
 ## Выполнение.
 
+### 1. TUN/TAP. 
+   1.1. Разверачиваем две машины - server  и client [Vagrantfile](Vagrantfile).
+   1.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [openvpn](ansible/playbook=openvpn.yml).
 
 
-
-
-
-1. Развернул три виртуальные машины - router1, router2 и router3: [Vagrantfile](Vagrantfile).
+   
    Все эти три виртуальные машины соединены между собой сетями (10.0.10.0/30, 10.0.11.0/30 и 10.0.12.0/30). У каждого роутера есть дополнительная сеть:
    
 - на **router1** — 192.168.10.0/24
