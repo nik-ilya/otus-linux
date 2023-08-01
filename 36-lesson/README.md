@@ -17,7 +17,7 @@
    
    1.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [openvpn](ansible/playbook-openvpn.yml).
 
-   1.3. Сразу после окончания настройки поднимается режим **TAP**:
+   1.3. Сразу после окончания настройки поднимается VPN в режим **TAP**:
 
 ```
 [root@client ~]# ip a
@@ -66,7 +66,7 @@ Connecting to host 10.10.10.1, port 5201
 iperf Done.
 ```
    
-   1.6. Отключаем **TAP** и включаем **TUN** на двух машинах.
+   1.6. Отключаем режим **TAP** и включаем режим **TUN** на двух машинах.
 
 ```
 [root@server ~]# systemctl stop openvpn@server
@@ -130,4 +130,8 @@ Connecting to host 10.10.20.1, port 5201
 
 iperf Done.
 ```
+   1.10. Выводы по результатам измерения скорости в двух режимах VPN.
+
+
+   
 
