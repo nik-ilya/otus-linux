@@ -144,6 +144,77 @@ iperf Done.
    
    2.2. С помощью Ansible запускаются плейбуки [base](ansible/playbook-base.yml) и [ras](ansible/playbook-ras.yml).
 
-   2.3. После настройки машины ras запускаем openvpn на локальной машине. используя конфиг файл [client.conf](client.conf)
+   2.3. После настройки машины ras, запускаем openvpn на локальной машине, используя конфиг файл [client.conf](client.conf).
+
+```
+root@otuslinux-new:~/otus-linux/36-lesson# openvpn --config client.conf
+Tue Aug  1 01:27:56 2023 WARNING: file './ansible/client/client.key' is group or others accessible
+Tue Aug  1 01:27:56 2023 OpenVPN 2.4.7 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [LZ4] [EPOLL] [PKCS11] [MH/PKTINFO] [AEAD] built on Mar 22 2022
+Tue Aug  1 01:27:56 2023 library versions: OpenSSL 1.1.1f  31 Mar 2020, LZO 2.10
+Tue Aug  1 01:27:56 2023 TCP/UDP: Preserving recently used remote address: [AF_INET]192.168.56.30:1207
+Tue Aug  1 01:27:56 2023 Socket Buffers: R=[212992->212992] S=[212992->212992]
+Tue Aug  1 01:27:56 2023 UDP link local (bound): [AF_INET][undef]:1194
+Tue Aug  1 01:27:56 2023 UDP link remote: [AF_INET]192.168.56.30:1207
+Tue Aug  1 01:27:56 2023 TLS: Initial packet from [AF_INET]192.168.56.30:1207, sid=96f6f144 a4ecd709
+Tue Aug  1 01:27:56 2023 VERIFY OK: depth=1, CN=rasvpn
+Tue Aug  1 01:27:56 2023 VERIFY KU OK
+Tue Aug  1 01:27:56 2023 Validating certificate extended key usage
+Tue Aug  1 01:27:56 2023 ++ Certificate has EKU (str) TLS Web Server Authentication, expects TLS Web Server Authentication
+Tue Aug  1 01:27:56 2023 VERIFY EKU OK
+Tue Aug  1 01:27:56 2023 VERIFY OK: depth=0, CN=rasvpn
+Tue Aug  1 01:27:56 2023 Control Channel: TLSv1.3, cipher TLSv1.3 TLS_AES_256_GCM_SHA384, 2048 bit RSA
+Tue Aug  1 01:27:56 2023 [rasvpn] Peer Connection Initiated with [AF_INET]192.168.56.30:1207
+Tue Aug  1 01:27:57 2023 SENT CONTROL [rasvpn]: 'PUSH_REQUEST' (status=1)
+Tue Aug  1 01:27:57 2023 PUSH: Received control message: 'PUSH_REPLY,topology net30,ping 10,ping-restart 120,ifconfig 10.10.30.6 10.10.30.5,peer-id 0,cipher AES-256-GCM'
+Tue Aug  1 01:27:57 2023 OPTIONS IMPORT: timers and/or timeouts modified
+Tue Aug  1 01:27:57 2023 OPTIONS IMPORT: --ifconfig/up options modified
+Tue Aug  1 01:27:57 2023 OPTIONS IMPORT: peer-id set
+Tue Aug  1 01:27:57 2023 OPTIONS IMPORT: adjusting link_mtu to 1625
+Tue Aug  1 01:27:57 2023 OPTIONS IMPORT: data channel crypto options modified
+Tue Aug  1 01:27:57 2023 Data Channel: using negotiated cipher 'AES-256-GCM'
+Tue Aug  1 01:27:57 2023 Outgoing Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+Tue Aug  1 01:27:57 2023 Incoming Data Channel: Cipher 'AES-256-GCM' initialized with 256 bit key
+Tue Aug  1 01:27:57 2023 ROUTE_GATEWAY 45.144.49.1/255.255.255.0 IFACE=eth0 HWADDR=fa:16:3e:da:93:22
+Tue Aug  1 01:27:57 2023 TUN/TAP device tun0 opened
+Tue Aug  1 01:27:57 2023 TUN/TAP TX queue length set to 100
+Tue Aug  1 01:27:57 2023 /sbin/ip link set dev tun0 up mtu 1500
+Tue Aug  1 01:27:57 2023 /sbin/ip addr add dev tun0 local 10.10.30.6 peer 10.10.30.5
+Tue Aug  1 01:27:57 2023 /sbin/ip route add 10.10.30.0/24 via 10.10.30.5
+Tue Aug  1 01:27:57 2023 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+Tue Aug  1 01:27:57 2023 Initialization Sequence Completed
+```
+
+   2.4. Проверяем поднятие VPN:
+
+```
+root@otuslinux-new:~/otus-linux/36-lesson# ip a
+...
+21: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 100
+    link/none 
+    inet 10.10.30.6 peer 10.10.30.5/32 scope global tun0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::77d9:8322:8d65:a4aa/64 scope link stable-privacy 
+       valid_lft forever preferred_lft forever
+
+```
+
+   2.5. Приверим командой *ping* доступность сервера ras с локальной машины:
+
+```
+root@otuslinux-new:~/otus-linux/36-lesson# ping 10.10.30.1
+PING 10.10.30.1 (10.10.30.1) 56(84) bytes of data.
+64 bytes from 10.10.30.1: icmp_seq=1 ttl=64 time=1.81 ms
+64 bytes from 10.10.30.1: icmp_seq=2 ttl=64 time=1.65 ms
+64 bytes from 10.10.30.1: icmp_seq=3 ttl=64 time=1.27 ms
+64 bytes from 10.10.30.1: icmp_seq=4 ttl=64 time=1.15 ms
+64 bytes from 10.10.30.1: icmp_seq=5 ttl=64 time=1.31 ms
+64 bytes from 10.10.30.1: icmp_seq=6 ttl=64 time=1.17 ms
+64 bytes from 10.10.30.1: icmp_seq=7 ttl=64 time=1.25 ms
+64 bytes from 10.10.30.1: icmp_seq=8 ttl=64 time=1.68 ms
+^C
+--- 10.10.30.1 ping statistics ---
+8 packets transmitted, 8 received, 0% packet loss, time 7009ms
+rtt min/avg/max/mdev = 1.146/1.410/1.812/0.243 ms
+```
 
 
