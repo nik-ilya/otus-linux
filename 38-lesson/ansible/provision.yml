@@ -1,0 +1,86 @@
+- name: Base set up
+  hosts: all
+  become: yes
+  tasks:
+  - name: install softs on CentOS
+    yum:
+      name:
+        - vim
+        - chrony
+        - nano
+        - mc
+      state: present
+      update_cache: true
+
+  - name: disable firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: false
+
+  - name: disable SElinux
+    selinux:
+      state: disabled
+
+  - name: disable SElinux now
+    shell: setenforce 0
+
+  - name: Set up timezone
+    timezone:
+      name: "Europe/Moscow"
+
+  - name: enable chrony
+    service:
+      name: chronyd
+      state: restarted
+      enabled: true
+
+  - name: change /etc/hosts
+    template:
+      src: hosts.j2
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: 0644
+
+- name: Server set up
+  hosts: ipaserver
+  become: yes
+  tasks:
+    - name: install module ipa-server
+      yum:
+        name:
+          - freeipa-server
+        state: present
+        update_cache: true
+
+
+    - name: install ipa-server
+      command: >
+          ipa-server-install
+            --admin-password=adminpass
+            --hostname=ipaserver.otus.lan
+            --domain=otus.lan
+            --realm=OTUS.LAN
+            --ds-password=password
+            --no-host-dns
+            --no-ntp
+            --unattended
+
+
+
+- name: Client set up
+  hosts: ipaclient
+  become: yes
+  tasks:
+    - name: install module ipa-client
+      yum:
+        name:
+          - freeipa-client
+        state: present
+        update_cache: true
+
+    - name: add host to ipa-server
+      shell: echo -e "yes\nyes" | ipa-client-install --mkhomedir --domain=OTUS.LAN --server=ipaserver.otus.lan --no-ntp -p admin -w adminpass
+
+
