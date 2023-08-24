@@ -2,7 +2,7 @@
 
 ## Домашнее задание.
 
-1. Установить FreeIPA;
+1. Установить FreeIPA на сервер;
 2. Написать Ansible playbook для конфигурации клиента.
 
 
@@ -13,69 +13,59 @@
 -    Клиентский сервер ipaclient.otus.lan - 192.168.50.11
 
 
-### Проверка настройки split-DNS:
+### Проверка работы LDAP:
 
-- С первой клиентской машины доступны обе зоны *newdns.lab* и *web1.dns.lab*, но недоступны другие ресурсы в зоне *dns.lab*.
+- На сервере **ipaserver.otus.lan** создаем пользователя *otus-user*:
 
 ```
-[root@client ~]# ping www.newdns.lab
-PING www.newdns.lab (192.168.50.15) 56(84) bytes of data.
-64 bytes from client (192.168.50.15): icmp_seq=1 ttl=64 time=0.022 ms
-64 bytes from client (192.168.50.15): icmp_seq=2 ttl=64 time=0.040 ms
-64 bytes from client (192.168.50.15): icmp_seq=3 ttl=64 time=0.039 ms
-64 bytes from client (192.168.50.15): icmp_seq=4 ttl=64 time=0.037 ms
-64 bytes from client (192.168.50.15): icmp_seq=5 ttl=64 time=0.037 ms
-^C
---- www.newdns.lab ping statistics ---
-5 packets transmitted, 5 received, 0% packet loss, time 4001ms
-rtt min/avg/max/mdev = 0.022/0.035/0.040/0.006 ms
+[root@ipaserver ~]# kinit admin
+Password for admin@OTUS.LAN: 
 
-[root@client ~]# ping web1.dns.lab
-PING web1.dns.lab (192.168.50.15) 56(84) bytes of data.
-64 bytes from client (192.168.50.15): icmp_seq=1 ttl=64 time=0.020 ms
-64 bytes from client (192.168.50.15): icmp_seq=2 ttl=64 time=0.038 ms
-64 bytes from client (192.168.50.15): icmp_seq=3 ttl=64 time=0.034 ms
-64 bytes from client (192.168.50.15): icmp_seq=4 ttl=64 time=0.034 ms
-64 bytes from client (192.168.50.15): icmp_seq=5 ttl=64 time=0.035 ms
-^C
---- web1.dns.lab ping statistics ---
-5 packets transmitted, 5 received, 0% packet loss, time 4001ms
-rtt min/avg/max/mdev = 0.020/0.032/0.038/0.007 ms
-
-[root@client ~]# ping web2.dns.lab
-ping: web2.dns.lab: Name or service not known
-[root@client ~]#
+[root@ipaserver ~]# ipa user-add otus-user --first=Otus --last=User --password
+Password: 
+Enter Password again to verify: 
+----------------------
+Added user "otus-user"
+----------------------
+  User login: otus-user
+  First name: Otus
+  Last name: User
+  Full name: Otus User
+  Display name: Otus User
+  Initials: OU
+  Home directory: /home/otus-user
+  GECOS: Otus User
+  Login shell: /bin/sh
+  Principal name: otus-user@OTUS.LAN
+  Principal alias: otus-user@OTUS.LAN
+  User password expiration: 20230824083646Z
+  Email address: otus-user@otus.lan
+  UID: 1509400003
+  GID: 1509400003
+  Password: True
+  Member of groups: ipausers
+  Kerberos keys available: True
+[root@ipaserver ~]# 
 ```
 
-- Вторая клиентская машина не видит зоны *newdns.lab* и видит только зоны *dns.lab*.
+Через веб-форму убеждаемся в появлении нового пользователя:
+
+![](ldap1.png)
+
+
+
+- На клиентской машине **ipaclient.otus.lan** задаем пароль пользователю и проверяем возможность подключения:
 ```
-[root@client2 ~]# ping www.newdns.lab
-ping: www.newdns.lab: Name or service not known
+[root@ipaclient ~]# kinit otus-user
+Password for otus-user@OTUS.LAN: 
+Password expired.  You must change it now.
+Enter new password: 
+Enter it again:
 
-[root@client2 ~]# ping web1.dns.lab
-PING web1.dns.lab (192.168.50.15) 56(84) bytes of data.
-64 bytes from 192.168.50.15 (192.168.50.15): icmp_seq=1 ttl=64 time=2.69 ms
-64 bytes from 192.168.50.15 (192.168.50.15): icmp_seq=2 ttl=64 time=1.47 ms
-64 bytes from 192.168.50.15 (192.168.50.15): icmp_seq=3 ttl=64 time=1.25 ms
-64 bytes from 192.168.50.15 (192.168.50.15): icmp_seq=4 ttl=64 time=1.33 ms
-64 bytes from 192.168.50.15 (192.168.50.15): icmp_seq=5 ttl=64 time=1.43 ms
-64 bytes from 192.168.50.15 (192.168.50.15): icmp_seq=6 ttl=64 time=1.35 ms
-c^C
---- web1.dns.lab ping statistics ---
-6 packets transmitted, 6 received, 0% packet loss, time 5011ms
-rtt min/avg/max/mdev = 1.250/1.588/2.690/0.500 ms
+[root@ipaclient ~]# su - otus-user
+Creating home directory for otus-user.
 
-
-[root@client2 ~]#  ping web2.dns.lab
-PING web2.dns.lab (192.168.50.16) 56(84) bytes of data.
-64 bytes from client2 (192.168.50.16): icmp_seq=1 ttl=64 time=0.045 ms
-64 bytes from client2 (192.168.50.16): icmp_seq=2 ttl=64 time=0.035 ms
-64 bytes from client2 (192.168.50.16): icmp_seq=3 ttl=64 time=0.046 ms
-64 bytes from client2 (192.168.50.16): icmp_seq=4 ttl=64 time=0.033 ms
-64 bytes from client2 (192.168.50.16): icmp_seq=5 ttl=64 time=0.040 ms
-64 bytes from client2 (192.168.50.16): icmp_seq=6 ttl=64 time=0.044 ms
-^C
---- web2.dns.lab ping statistics ---
-6 packets transmitted, 6 received, 0% packet loss, time 5001ms
-rtt min/avg/max/mdev = 0.033/0.040/0.046/0.008 ms
+[otus-user@ipaclient ~]$ 
+[otus-user@ipaclient ~]$ pwd
+/home/otus-user
 ```
