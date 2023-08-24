@@ -9,8 +9,8 @@
 ## Выполнение.
 
 Результатом выполнения домашнего задания является [Vagrantfile](Vagrantfile) файл, который средствами ansible provisioning подготавливает следующий стенд:
--    IPA сервер ipaserver.otus.lan - 192.168.50.10
--    Клиентский сервер ipaclient.otus.lan - 192.168.50.11
+-    IPA сервер ipaserver.otus.lan - 192.168.57.10
+-    Клиентский сервер ipaclient.otus.lan - 192.168.57.11
 
 
 ### Проверка работы LDAP:
