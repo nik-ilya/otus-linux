@@ -47,3 +47,5 @@
 [ДЗ 22. "VPN"](36-lesson/)
 
 [ДЗ 23. "DNS"](37-lesson/)
+
+[ДЗ 24. "LDAP"](38-lesson/)
