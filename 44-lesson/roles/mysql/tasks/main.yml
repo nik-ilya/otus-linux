@@ -1,0 +1,48 @@
+---
+# tasks file for mysql
+- name: install percona repository
+  yum: 
+    name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+    state: present
+
+- name: install epel-release
+  yum: 
+    name: epel-release
+    state: present
+
+- name: install percona server
+  yum:
+    name:  Percona-Server-server-57
+    state: present
+
+- name: install mc
+  yum: 
+    name: mc
+    state: present
+
+- name: install nano
+  yum: 
+    name: nano
+    state: present
+
+- name: install PyMySQL
+  yum: 
+    name: python2-PyMySQL
+    state: present
+
+- name: start mysql service
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Get current temporary root password
+  shell: cat /var/log/mysqld.log | grep 'root@localhost:' | awk '{print $11}'
+  register: generated_pass
+
+- name: Update MySQL root password
+  shell: |
+    set -e
+    mysql --connect-expired-password -uroot -p'{{ generated_pass.stdout }}' -e 'ALTER USER USER() IDENTIFIED BY "{{ mysql_root_pass }}"'
+#    sed -i '/A temporary password is generated/d' /var/log/mysqld.log
+  when: generated_pass.stdout

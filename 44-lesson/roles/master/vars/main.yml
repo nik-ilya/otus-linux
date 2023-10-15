@@ -1,0 +1,4 @@
+---
+# vars file for master
+mysql_root_pass: 'Qwerty@123'
+mysql_repl_pass: '!OtusLinux2023'

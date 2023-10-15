@@ -1,0 +1,18 @@
+---
+- name: install and configure mysql
+  hosts: all
+  become: true
+  roles:
+    - mysql
+
+- name: configure mysql on master
+  hosts: master
+  become: true
+  roles:
+    - master
+
+- name: configure mysql on slave
+  hosts: slave
+  become: true
+  roles:
+    - slave

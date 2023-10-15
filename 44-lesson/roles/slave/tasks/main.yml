@@ -1,0 +1,34 @@
+---
+# tasks file for slave
+
+- name: copy config files
+  template:
+    src: "{{ item }}"
+    dest: /etc/my.cnf.d/
+  with_fileglob: files/my.cnf.d.slave/*
+#  notify: restart mysql
+
+- name: restart mysql
+  systemd:
+    name: mysqld
+    state: restarted
+
+- name: copy dump master
+  copy:
+    src: master.sql
+    dest: /tmp/
+
+- name: restore database from dump
+  mysql_db:
+    state: import
+    login_password: '{{ mysql_root_pass }}'
+    name: all
+    target: /tmp/master.sql
+    login_unix_socket: /var/lib/mysql/mysql.sock
+
+- name: Setup slave
+  shell: mysql -uroot -p'{{ mysql_root_pass }}' -e 'CHANGE MASTER TO MASTER_HOST = "192.168.11.150", MASTER_PORT = 3306, MASTER_USER = "repl", MASTER_PASSWORD = "{{ mysql_repl_pass }}", MASTER_AUTO_POSITION = 1;'
+#  ignore_errors: yes
+
+- name: Start SLAVE
+  shell: mysql -uroot -p'{{ mysql_root_pass }}' -e 'START SLAVE;'

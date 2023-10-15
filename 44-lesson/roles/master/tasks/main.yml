@@ -1,0 +1,38 @@
+---
+# tasks file for master
+
+- name: copy config files
+  template:
+    src: "{{ item }}"
+    dest: /etc/my.cnf.d/
+  with_fileglob: files/my.cnf.d.master/*
+  notify: restart mysql
+
+- name: copy bet dump
+  copy:
+    src: bet.dmp
+    dest: /tmp/bet.dmp
+
+- name: create database bet
+  mysql_db:
+    name: bet
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    login_password: '{{ mysql_root_pass }}'
+
+- name: import bet dump
+  mysql_db:
+    name: bet
+    state: import
+    login_password: '{{ mysql_root_pass }}'
+    target: /tmp/bet.dmp
+    login_unix_socket: /var/lib/mysql/mysql.sock
+
+- name: create replica user
+  mysql_user:
+    login_password: '{{ mysql_root_pass }}'
+    name: repl
+    host: '%'
+    password: '{{ mysql_repl_pass }}'
+    priv: '*.*:REPLICATION SLAVE'
+    state: present
