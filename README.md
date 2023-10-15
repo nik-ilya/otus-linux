@@ -49,3 +49,5 @@
 [ДЗ 23. "DNS"](37-lesson/)
 
 [ДЗ 24. "LDAP"](38-lesson/)
+
+[ДЗ 25. "MySQL"](44-lesson/)
