@@ -51,3 +51,5 @@
 [ДЗ 24. "LDAP"](38-lesson/)
 
 [ДЗ 25. "MySQL"](44-lesson/)
+
+[ДЗ 26. "PostgreSQL"](45-lesson/)
