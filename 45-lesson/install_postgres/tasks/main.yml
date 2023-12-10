@@ -1,0 +1,50 @@
+---
+- name: disable firewalld service
+  service:
+    name: firewalld
+    state: stopped
+    enabled: false
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Ensure SELinux is set to disable mode
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: SELINUX=disabled
+
+- name: Add Postgres 14 repo
+  shell: |
+    dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+  args:
+    warn: no
+
+- name: Disable built-in PostgreSQL module
+  shell: |
+    dnf -qy module disable postgresql
+  args:
+    warn: no
+
+- name: install postgresql-server 14
+  dnf: 
+    name: postgresql14-server
+    state: present
+    update_cache: true
+
+- name: check init
+  stat:
+    path: /var/lib/pgsql/14/data/pg_stat
+  register: stat_result
+
+- name: initialization setup
+  shell: sudo /usr/pgsql-14/bin/postgresql-14-setup initdb
+  when: not stat_result.stat.exists
+
+- name: enable and start service
+  service:
+    name: postgresql-14
+    state: started
+    enabled: true
+
