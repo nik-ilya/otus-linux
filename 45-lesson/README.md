@@ -209,3 +209,46 @@ postgres=# \l
 (3 rows)
 ```
 
+Далее на хосте **barman** запустим восстановление от пользователя *barman*: 
+
+```
+[root@barman ~]# su barman
+
+bash-4.4$ barman recover node1 20231215T112022 /var/lib/pgsql/14/data/ --remote-ssh-comman "ssh postgres@192.168.57.11"
+Starting remote restore for server node1 using backup 20231215T112022
+Destination directory: /var/lib/pgsql/14/data/
+Remote command: ssh postgres@192.168.57.11
+Copying the base backup.
+Copying required WAL segments.
+Generating archive status files
+Identify dangerous settings in destination directory.
+
+Recovery completed (start time: 2023-12-15 13:09:32.796208+00:00, elapsed time: 6 seconds)
+Your PostgreSQL server has been successfully prepared for recovery!
+```
+
+Далее на хосте **node1** перезапускаем postgresql-сервер и снова проверить список БД. 
+
+```
+[vagrant@node1 ~]$ sudo -u postgres psql
+could not change directory to "/home/vagrant": Permission denied
+psql (14.10)
+Type "help" for help.
+
+postgres=# \l
+                                  List of databases
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+-----------+----------+----------+-------------+-------------+-----------------------
+ otus      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ otus_test | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+(5 rows)
+
+```
+
+Базы otus вернулись обратно.
+
