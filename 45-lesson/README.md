@@ -114,5 +114,60 @@ fer dbname=replication host=192.168.57.11 port=5432 fallback_application_name=wa
 ```
 
 
+Далее проверяем работу резервного копирования на хосте **barman** под пользователем *barman*.
+
+```
+[root@barman ~]# su barman
+
+bash-4.4$ barman switch-wal node1
+The WAL file 000000010000000000000004 has been closed on server 'node1'
+
+bash-4.4$ barman cron 
+Starting WAL archiving for server node1
+
+bash-4.4$ barman check node1
+Server node1:
+	PostgreSQL: OK
+	superuser or standard user with backup privileges: OK
+	PostgreSQL streaming: OK
+	wal_level: OK
+	replication slot: OK
+	directories: OK
+	retention policy settings: OK
+	backup maximum age: FAILED (interval provided: 4 days, latest backup age: No available backups)
+	backup minimum size: OK (0 B)
+	wal maximum age: OK (no last_wal_maximum_age provided)
+	wal size: OK (0 B)
+	compression settings: OK
+	failed backups: OK (there are 0 failed backups)
+	minimum redundancy requirements: FAILED (have 0 backups, expected at least 1)
+	pg_basebackup: OK
+	pg_basebackup compatible: OK
+	pg_basebackup supports tablespaces mapping: OK
+	systemid coherence: OK (no system Id stored on disk)
+	pg_receivexlog: OK
+	pg_receivexlog compatible: OK
+	receive-wal running: OK
+	archiver errors: OK
+```
+Видно, что все ОК и можно запускать создание бекапа.
+```
+bash-4.4$ barman backup node1
+Starting backup using postgres method for server node1 in /var/lib/barman/node1/base/20231215T112022
+Backup start at LSN: 0/5000060 (000000010000000000000005, 00000060)
+Starting backup copy via pg_basebackup for 20231215T112022
+Copy done (time: 3 seconds)
+Finalising the backup.
+This is the first backup for server node1
+WAL segments preceding the current backup have been found:
+	000000010000000000000004 from server node1 has been removed
+Backup size: 41.8 MiB
+Backup end at LSN: 0/7000000 (000000010000000000000006, 00000000)
+Backup completed (start time: 2023-12-15 11:20:22.703844, elapsed time: 5 seconds)
+Processing xlog segments from streaming for node1
+	000000010000000000000005
+	000000010000000000000006
+```
+
 
 
