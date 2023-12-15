@@ -6,6 +6,7 @@
         - python3-pexpect.noarch
         - python3-psycopg2
         - bash-completion
+        - rsync
         - wget
       state: present
       update_cache: true
