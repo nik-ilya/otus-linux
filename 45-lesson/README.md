@@ -169,5 +169,43 @@ Processing xlog segments from streaming for node1
 	000000010000000000000006
 ```
 
+Проверка восстановления из бекапов:
 
+На хосте **node1** в psql удаляем базы Otus: 
+
+```
+[vagrant@node1 ~]$ sudo -u postgres psql
+could not change directory to "/home/vagrant": Permission denied
+psql (14.10)
+Type "help" for help.
+
+postgres=# \l
+                                  List of databases
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+-----------+----------+----------+-------------+-------------+-----------------------
+ otus      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ otus_test | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+(5 rows)
+
+
+postgres=# DROP DATABASE otus;
+DROP DATABASE
+postgres=# DROP DATABASE otus_test;
+DROP DATABASE
+postgres=# \l
+                                  List of databases
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+-----------+----------+----------+-------------+-------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+(3 rows)
+```
 
