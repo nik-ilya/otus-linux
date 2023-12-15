@@ -71,7 +71,7 @@ postgres=# \l
 (5 rows)
 ```
 
-На хосте **node2** также в psql также проверим список БД, в списке БД должна появится БД *otus_test*. 
+На хосте **node2** проверим список БД, где должна появится БД *otus_test*. 
 
 ```
 [vagrant@node2 ~]$ sudo -u postgres psql
