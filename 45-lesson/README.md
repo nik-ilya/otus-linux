@@ -215,7 +215,7 @@ postgres=# \l
 [root@barman ~]# su barman
 
 bash-4.4$ barman list-backup node1
-node1 20231215T112022 - Fri Dec 15 08:10:32 2023 - Size: 33.6 MiB - WAL Size: 0 B
+node1 20231215T112022 - Fri Dec 15 11:20:12 2023 - Size: 33.6 MiB - WAL Size: 0 B
 
 
 bash-4.4$ barman recover node1 20231215T112022 /var/lib/pgsql/14/data/ --remote-ssh-comman "ssh postgres@192.168.57.11"
